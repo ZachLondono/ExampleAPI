@@ -7,8 +7,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["ExampleAPI.csproj", "ExampleAPI/"]
 RUN dotnet restore "ExampleAPI/ExampleAPI.csproj"
-COPY . .
+
 WORKDIR "/src/ExampleAPI"
+COPY . .
+
 RUN dotnet build "ExampleAPI.csproj" -c Release -o /app/build
 
 FROM build AS publish
