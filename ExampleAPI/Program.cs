@@ -1,3 +1,6 @@
+using ExampleAPI.Common;
+using ExampleAPI.Orders.Data;
+using ExampleAPI.Orders.Domain;
 using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +11,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IRepository<Order>, OrderRepository>();
+builder.Services.AddTransient<NpgsqlOrderConnectionFactory>();
 
 var app = builder.Build();
 
