@@ -6,7 +6,7 @@ public interface IRepository<T> where T : Entity {
 
     Task<T?> Get(int id);
 
-    Task<T> Save(T entity);
+    Task Save(T entity);
 
     Task Remove(T entity);
 
