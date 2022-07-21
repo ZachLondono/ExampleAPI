@@ -80,7 +80,7 @@ public class OrderController : ControllerBase {
 
     [Route("DeleteOrder/{orderId}")]
     [HttpDelete]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int orderId) {
         _logger.LogInformation("Deleting order {orderId}", orderId);
@@ -92,7 +92,7 @@ public class OrderController : ControllerBase {
 
         await _repository.Remove(order);
 
-        return Ok();
+        return NoContent();
     }
 
     [Route("AddItem/{orderId}")]
