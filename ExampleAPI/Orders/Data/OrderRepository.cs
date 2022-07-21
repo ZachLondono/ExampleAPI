@@ -139,6 +139,9 @@ public class OrderRepository :  IRepository<Order> {
         _connection.Close();
 
         entity.PublishEvents(_publisher);
+        foreach (var item in entity.Items) {
+            item.PublishEvents(_publisher);
+        }
 
         return new Order(entity.Id, entity.Name, items);
 
