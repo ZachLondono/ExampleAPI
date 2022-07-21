@@ -54,7 +54,7 @@ public class OrderController : ControllerBase {
         return await _sender.Send(new Delete.Command(orderId));
     }
 
-    [Route("DeleteOrder/{orderId}/{itemId}")]
+    [Route("DeleteItem/{orderId}/{itemId}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
