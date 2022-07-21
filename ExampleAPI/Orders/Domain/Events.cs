@@ -10,6 +10,6 @@ public static class Events {
 
     public record ItemQtyAdjustedEvent(OrderedItem Item, int Qty) : DomainEvent;
 
-    public record OrderNameChangedEvent(string name) : DomainEvent;
+    public record OrderNameChangedEvent(string Name) : DomainEvent;
 
 }

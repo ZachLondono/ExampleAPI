@@ -2,7 +2,7 @@
 
 namespace ExampleAPI.Common;
 
-public abstract class DomainEvent : INotification {
+public abstract record DomainEvent : INotification {
 
     public bool IsPublished { get; private set; } = false;
 
