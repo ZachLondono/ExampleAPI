@@ -13,8 +13,16 @@ public class OrderRepository :  IRepository<Order> {
         _connection = factory.CreateConnection();
     }
 
-    public Task<Order> Create() {
-        throw new NotImplementedException();
+    public async Task<Order> Create() {
+
+        const string command = "INSERT INTO orders (name) values (@Name) RETURNING id;";
+
+        const string defaultName = "New Order";
+
+        int newId = await _connection.QuerySingleAsync<int>(command, new { Name = defaultName });
+
+        return new(newId, defaultName, Enumerable.Empty<OrderedItem>());
+
     }
 
     public async Task<Order?> Get(int id) {
@@ -79,13 +87,22 @@ public class OrderRepository :  IRepository<Order> {
 
         foreach (var domainEvent in entity.Events) {
 
-            if (domainEvent is Events.ItemAddedEvent itemAdded) {
+            if (domainEvent is Events.OrderNameChangedEvent nameChanged) {
 
-                const string command = "INSERT INTO ordereditems (name, qty, orderid) VALUES (@Name, @Qty, @OrderId) RETURNING id;";
+                const string command = "UPDATE orders SET name = @Name WHERE id = @Id;";
+
+                await _connection.ExecuteAsync(command, new {
+                    entity.Name,
+                    entity.Id
+                }, trx);
+
+            } else if (domainEvent is Events.ItemAddedEvent itemAdded) {
+
+                const string command = "INSERT INTO ordereditems (name, qty, orderid) VALUES (@Name, @Qty, @Id) RETURNING id;";
                 int newItemId = await _connection.QuerySingleAsync<int>(command, new {
-                    Name = itemAdded.Name,
-                    Qty = itemAdded.Qty,
-                    OrderId = entity.Id
+                    itemAdded.Name,
+                    itemAdded.Qty,
+                    entity.Id
                 }, trx);
 
                 items.Remove(itemAdded.Item);
@@ -101,7 +118,7 @@ public class OrderRepository :  IRepository<Order> {
 
                 const string command = "DELETE FROM ordereditems WHERE id = @Id;";
                 await _connection.QuerySingleAsync<int>(command, new {
-                    Id = itemRemoved.Item.Id,
+                    itemRemoved.Item.Id,
                 }, trx);
 
             }

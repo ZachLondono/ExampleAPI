@@ -10,4 +10,6 @@ public static class Events {
 
     public record ItemQtyAdjustedEvent(OrderedItem Item, int Qty) : IDomainEvent;
 
+    public record OrderNameChangedEvent(string name) : IDomainEvent;
+
 }

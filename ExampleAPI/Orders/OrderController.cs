@@ -17,6 +17,37 @@ public class OrderController : ControllerBase {
         _repository = repository;
     }
 
+    [Route("/")]
+    [HttpPost]
+    public async Task<OrderDTO> Create([FromBody] NewOrder newOrder) {
+        //TODO: write query specific code for this endpoint, rather than using repository so that data does not need to be mapped twice
+        _logger.LogInformation("Creating new order");
+
+        var order = await _repository.Create();
+        order.SetName(newOrder.Name);
+        foreach (var item in newOrder.NewItems) {
+            order.AddItem(item.Name, item.Qty);
+        }
+
+        order = await _repository.Save(order);
+
+        var itemDTOs = new List<OrderedItemDTO>();
+
+        foreach (var item in order.Items) {
+            itemDTOs.Add(new() {
+                Id = item.Id,
+                Name = item.Name,
+                Qty = item.Qty
+            });
+        }
+
+        return new OrderDTO() {
+            Id = order.Id,
+            Name = order.Name,
+            Items = itemDTOs
+        };
+    }
+
     [Route("GetAllOrders")]
     [HttpGet]
     public async Task<IEnumerable<OrderDTO>> GetAll() {
@@ -93,6 +124,40 @@ public class OrderController : ControllerBase {
         await _repository.Remove(order);
 
         return NoContent();
+    }
+
+    [Route("SetName/{orderId}/{newName}")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddItem(int orderId, string newName) {
+        _logger.LogInformation("Updating order name {orderId}", orderId);
+        var order = await _repository.Get(orderId);
+
+        if (order is null) {
+            return NotFound($"Order with id '{orderId}' not found.");
+        }
+
+        order.SetName(newName);
+
+        order = await _repository.Save(order);
+
+        var itemDTOs = new List<OrderedItemDTO>();
+        foreach (var item in order.Items.Where(i => i.Id > 0)) {
+            itemDTOs.Add(new() {
+                Id = item.Id,
+                Name = item.Name,
+                Qty = item.Qty,
+            });
+        }
+
+        var orderDto = new OrderDTO() {
+            Id = order.Id,
+            Name = order.Name,
+            Items = itemDTOs
+        };
+
+        return Ok(orderDto);
     }
 
     [Route("AddItem/{orderId}")]
