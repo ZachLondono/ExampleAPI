@@ -1,4 +1,6 @@
-﻿namespace ExampleAPI.Common;
+﻿using MediatR;
+
+namespace ExampleAPI.Common;
 
 public abstract class Entity {
 
@@ -12,5 +14,11 @@ public abstract class Entity {
     public void ClearEvents() => _events.Clear();
 
     protected void AddEvent(DomainEvent domainEvent) => _events.Add(domainEvent);
+
+    public void PublishEvents(IPublisher publisher) {
+        foreach (DomainEvent domainEvent in _events) {
+            domainEvent.Publish(publisher);
+        }
+    }
 
 }
