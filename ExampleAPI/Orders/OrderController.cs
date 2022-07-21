@@ -1,7 +1,10 @@
-﻿using ExampleAPI.Common;
+﻿using Dapper;
+using ExampleAPI.Common;
+using ExampleAPI.Orders.Data;
 using ExampleAPI.Orders.Domain;
 using ExampleAPI.Orders.DTO;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace ExampleAPI.Orders;
 
@@ -11,15 +14,16 @@ public class OrderController : ControllerBase {
 
     private readonly ILogger<OrderController> _logger;
     private readonly IRepository<Order> _repository;
+    private readonly NpgsqlOrderConnectionFactory _factory;
 
-    public OrderController(ILogger<OrderController> logger, IRepository<Order> repository) {
+    public OrderController(ILogger<OrderController> logger, IRepository<Order> repository, NpgsqlOrderConnectionFactory factory) {
         _logger = logger;
         _repository = repository;
+        _factory = factory;
     }
 
     [HttpPost]
     public async Task<OrderDTO> Create([FromBody] NewOrder newOrder) {
-        //TODO: write query specific code for this endpoint, rather than using repository so that data does not need to be mapped twice
         _logger.LogInformation("Creating new order");
 
         var order = await _repository.Create();
@@ -50,31 +54,18 @@ public class OrderController : ControllerBase {
     [Route("GetAllOrders")]
     [HttpGet]
     public async Task<IEnumerable<OrderDTO>> GetAll() {
-        //TODO: write query specific code for this endpoint, rather than using repository so that data does not need to be mapped twice
         _logger.LogInformation("Getting all orders");
 
-        var orders =  await _repository.GetAll();
-        List<OrderDTO> orderDTOs = new List<OrderDTO>();
+        var connection = _factory.CreateConnection();
+        const string query = "SELECT id, name FROM orders;";
+        var orders = await connection.QueryAsync<OrderDTO>(query);
+
         foreach (var order in orders) {
-
-            var itemDTOs = new List<OrderedItemDTO>();
-
-            foreach (var item in order.Items) {
-                itemDTOs.Add(new() {
-                    Id = item.Id,
-                    Name = item.Name,
-                    Qty = item.Qty
-                });
-            }
-
-            orderDTOs.Add(new() {
-                Id = order.Id,
-                Name = order.Name,
-                Items = itemDTOs
-            });
+            var items = await GetItemsFromOrderId(connection, order.Id);
+            order.Items = items;
         }
 
-        return orderDTOs;
+        return orders;
     }
 
     [Route("GetOrder/{orderId}")]
@@ -82,30 +73,24 @@ public class OrderController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int orderId) {
-        //TODO: write query specific code for this endpoint, rather than using repository so that data does not need to be mapped twice
         _logger.LogInformation("Getting order {orderId}", orderId);
-        Order? order = await _repository.Get(orderId);
+        
+        var connection = _factory.CreateConnection();
+        const string query = "SELECT id, name FROM orders;";
+        OrderDTO? order = await connection.QuerySingleOrDefaultAsync<OrderDTO>(query);
 
         if (order is null) {
             return NotFound($"Order with id '{orderId}' not found.");
         }
 
-        var items = new List<OrderedItemDTO>();
-        foreach (var item in order.Items) {
-            items.Add(new() {
-                Id = item.Id,
-                Name = item.Name,
-                Qty = item.Qty
-            });
-        }
+        order.Items = await GetItemsFromOrderId(connection, order.Id);
 
-        var dto = new OrderDTO() {
-            Id = order.Id,
-            Name = order.Name,
-            Items = items
-        };
+        return Ok(order);
+    }
 
-        return Ok(dto);
+    private static async Task<IEnumerable<OrderedItemDTO>> GetItemsFromOrderId(IDbConnection connection, int orderId, IDbTransaction? transaction = null) {
+        const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
+        return await connection.QueryAsync<OrderedItemDTO>(itemQuery, new { OrderId = orderId }, transaction);
     }
 
     [Route("DeleteOrder/{orderId}")]
