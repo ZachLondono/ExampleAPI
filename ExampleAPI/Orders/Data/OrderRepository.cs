@@ -59,16 +59,10 @@ public class OrderRepository :  IRepository<Order> {
 
     }
 
-    public async Task Remove(Order entity) {
-        // PostgreSQL ueses cascading delete to remove ordered items
-        const string command = "DELETE FROM orders WHERE id = @OrderId;";
-        await _connection.ExecuteAsync(command, new { OrderId = entity.Id });
-    }
-
-    private async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, int orderId, IDbTransaction? transaction = null) {
+    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, int orderId, IDbTransaction? transaction = null) {
         const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
 
-        var itemsData = await _connection.QueryAsync<OrderedItemData>(itemQuery, new { OrderId = orderId }, transaction);
+        var itemsData = await connection.QueryAsync<OrderedItemData>(itemQuery, new { OrderId = orderId }, transaction);
 
         List<OrderedItem> items = new List<OrderedItem>();
         foreach (var item in itemsData) {
@@ -76,6 +70,12 @@ public class OrderRepository :  IRepository<Order> {
         }
 
         return items;
+    }
+
+    public async Task Remove(Order entity) {
+        // PostgreSQL ueses cascading delete to remove ordered items
+        const string command = "DELETE FROM orders WHERE id = @OrderId;";
+        await _connection.ExecuteAsync(command, new { OrderId = entity.Id });
     }
 
     public async Task<Order> Save(Order entity) {
