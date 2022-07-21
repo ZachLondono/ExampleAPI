@@ -118,7 +118,7 @@ public class OrderRepository :  IRepository<Order> {
                 if (itemRemoved.Item.Id <= 0) continue;
 
                 const string command = "DELETE FROM ordereditems WHERE id = @Id;";
-                await _connection.QuerySingleAsync<int>(command, new {
+                await _connection.ExecuteAsync(command, new {
                     itemRemoved.Item.Id,
                 }, trx);
 
