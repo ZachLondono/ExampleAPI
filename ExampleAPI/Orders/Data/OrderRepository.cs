@@ -157,7 +157,7 @@ public class OrderRepository :  IRepository<Order> {
 
                 await connection.ExecuteAsync(command, new {
                     Id = itemAdjustment.Item.Id,
-                    Qty = itemAdjustment.Qty
+                    Qty = itemAdjustment.AdjustedQty
                 }, trx);
 
             }

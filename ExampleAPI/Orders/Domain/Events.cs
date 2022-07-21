@@ -10,7 +10,7 @@ public static class Events {
 
     public record ItemRemovedEvent(OrderedItem Item) : OrderEvent;
 
-    public record ItemQtyAdjustedEvent(OrderedItem Item, int Qty) : OrderEvent;
+    public record ItemQtyAdjustedEvent(OrderedItem Item, int AdjustedQty) : OrderEvent;
 
     public record OrderNameChangedEvent(string Name) : OrderEvent;
 
