@@ -81,14 +81,12 @@ public class OrderRepository :  IRepository<Order> {
         await _connection.ExecuteAsync(command, new { OrderId = entity.Id });
     }
 
-    public async Task<Order> Save(Order entity) {
+    public async Task Save(Order entity) {
 
         _connection.Open();
         var trx = _connection.BeginTransaction();
 
-        List<OrderedItem> items = new(entity.Items);
-
-        foreach (var domainEvent in entity.Events) {
+        foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 
             if (domainEvent is Events.OrderNameChangedEvent nameChanged) {
 
@@ -108,13 +106,13 @@ public class OrderRepository :  IRepository<Order> {
                     entity.Id
                 }, trx);
 
-                items.Remove(itemAdded.Item);
-                items.Add(new(newItemId, itemAdded.Name, itemAdded.Qty));
+                var prop = itemAdded.Item
+                                    .GetType()
+                                    .GetProperty("Id");
 
+                prop?.SetValue(itemAdded.Item, newItemId);
 
             } else if (domainEvent is Events.ItemRemovedEvent itemRemoved) {
-
-                items.Remove(itemRemoved.Item);
 
                 // If the item has not yet been persisted, there is no need to try to delete it
                 if (itemRemoved.Item.Id <= 0) continue;
@@ -139,17 +137,17 @@ public class OrderRepository :  IRepository<Order> {
         _connection.Close();
 
         entity.PublishEvents(_publisher);
+        entity.ClearEvents();
         foreach (var item in entity.Items) {
             item.PublishEvents(_publisher);
+            item.ClearEvents();
         }
-
-        return new Order(entity.Id, entity.Name, items);
 
     }
     
     private static async Task SaveItem(Order order, OrderedItem entity, IDbConnection connection, IDbTransaction trx) {
         
-        foreach (var domainEvent in entity.Events) {
+        foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 
             if (domainEvent is Events.ItemQtyAdjustedEvent itemAdjustment) {
 

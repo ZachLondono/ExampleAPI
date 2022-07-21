@@ -28,7 +28,7 @@ public class AddItem {
 
             order.AddItem(request.NewItem.Name, request.NewItem.Qty);
 
-            order = await _repository.Save(order);
+            await _repository.Save(order);
 
             var itemDTOs = new List<OrderedItemDTO>();
             foreach (var item in order.Items.Where(i => i.Id > 0)) {

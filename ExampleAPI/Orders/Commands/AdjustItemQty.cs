@@ -31,7 +31,7 @@ public class AdjustItemQty {
             }
 
             item.AdjustQty(request.ItemAdjustment.NewQty);
-            order = await _repository.Save(order);
+            await _repository.Save(order);
 
             item = order.Items.SingleOrDefault(i => i.Id == request.ItemAdjustment.Id);
             if (item is null) {

@@ -25,7 +25,7 @@ public class Create {
                 order.AddItem(item.Name, item.Qty);
             }
 
-            order = await _repository.Save(order);
+            await _repository.Save(order);
 
             var itemDTOs = new List<OrderedItemDTO>();
 

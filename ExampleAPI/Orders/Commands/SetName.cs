@@ -27,7 +27,7 @@ public class SetName {
 
             order.SetName(request.NewName);
 
-            order = await _repository.Save(order);
+            await _repository.Save(order);
 
             var itemDTOs = new List<OrderedItemDTO>();
             foreach (var item in order.Items.Where(i => i.Id > 0)) {
