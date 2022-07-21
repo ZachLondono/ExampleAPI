@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExampleAPI.Orders.Commands;
 
-public class Delete {
+public class RemoveItem {
 
-    public record Command(int OrderId) : IRequest<IActionResult>;
+    public record Command(int OrderId, int ItemId) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
-        
+
         private readonly IRepository<Order> _repository;
 
         public Handler(IRepository<Order> repository) {
@@ -18,16 +18,26 @@ public class Delete {
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
+
             var order = await _repository.Get(request.OrderId);
 
             if (order is null) {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
-            await _repository.Remove(order);
+            var item = order.Items.FirstOrDefault(i => i.Id == request.ItemId);
+
+            if (item is null) {
+                return new NotFoundObjectResult($"OrderedItem with id '{request.ItemId}' not found.");
+            }
+
+            order.RemoveItem(item);
+
+            await _repository.Save(order);
 
             return new NoContentResult();
-        }
-    }
 
+        }
+
+    }
 }

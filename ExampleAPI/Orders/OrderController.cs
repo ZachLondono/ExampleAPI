@@ -47,12 +47,20 @@ public class OrderController : ControllerBase {
 
     [Route("DeleteOrder/{orderId}")]
     [HttpDelete]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int orderId) {
         _logger.LogInformation("Deleting order {orderId}", orderId);
-        await _sender.Send(new Delete.Command(orderId));
-        return NoContent();
+        return await _sender.Send(new Delete.Command(orderId));
+    }
+
+    [Route("DeleteOrder/{orderId}/{itemId}")]
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteItem(int orderId, int itemId) {
+        _logger.LogInformation("Deleting ordered item {itemId} from order {orderId}", itemId, orderId);
+        return await _sender.Send(new RemoveItem.Command(orderId, itemId));
     }
 
     [Route("SetName/{orderId}/{newName}")]
