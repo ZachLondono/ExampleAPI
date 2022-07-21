@@ -8,7 +8,7 @@ public interface IRepository<T> where T : Entity {
 
     Task<T> Save(T entity);
 
-    Task<T> Remove(T entity);
+    Task Remove(T entity);
 
     Task<IEnumerable<T>> GetAll();
 

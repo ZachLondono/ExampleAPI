@@ -15,8 +15,8 @@ public class Order : Entity {
     }
 
     public OrderedItem AddItem(string name, int qty) {
-        AddEvent(new Events.ItemAddedEvent(name, qty));
         var item = new OrderedItem(-1, name, qty);
+        AddEvent(new Events.ItemAddedEvent(item, name, qty));
         _items.Add(item);
         return item;
     }
