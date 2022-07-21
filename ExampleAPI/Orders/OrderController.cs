@@ -17,7 +17,6 @@ public class OrderController : ControllerBase {
         _repository = repository;
     }
 
-    [Route("/")]
     [HttpPost]
     public async Task<OrderDTO> Create([FromBody] NewOrder newOrder) {
         //TODO: write query specific code for this endpoint, rather than using repository so that data does not need to be mapped twice
