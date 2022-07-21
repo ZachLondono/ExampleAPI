@@ -3,6 +3,7 @@ using ExampleAPI.Orders.Data;
 using ExampleAPI.Orders.Domain;
 using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
+using static ExampleAPI.Orders.Domain.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(typeof(Program).Assembly);
 builder.Services.AddTransient<IRepository<Order>, OrderRepository>();
 builder.Services.AddTransient<NpgsqlOrderConnectionFactory>();
+builder.Services.AddTransient<INotificationHandler<OrderEvent>, OrderEventHandler<OrderEvent>>();
 
 var app = builder.Build();
 

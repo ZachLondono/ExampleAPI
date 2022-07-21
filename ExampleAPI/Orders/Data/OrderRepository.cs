@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using ExampleAPI.Common;
 using ExampleAPI.Orders.Domain;
+using MediatR;
 using System.Data;
 
 namespace ExampleAPI.Orders.Data;
@@ -8,9 +9,11 @@ namespace ExampleAPI.Orders.Data;
 public class OrderRepository :  IRepository<Order> {
 
     private readonly IDbConnection _connection;
+    private readonly IPublisher _publisher;
 
-    public OrderRepository(NpgsqlOrderConnectionFactory factory) {
+    public OrderRepository(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
         _connection = factory.CreateConnection();
+        _publisher = publisher;
     }
 
     public async Task<Order> Create() {
@@ -135,6 +138,11 @@ public class OrderRepository :  IRepository<Order> {
         trx.Commit();
         _connection.Close();
 
+        entity.PublishEvents(_publisher);
+        foreach (var item in entity.Items) {
+            item.PublishEvents(_publisher);
+        }
+
         return new Order(entity.Id, entity.Name, items);
 
     }
@@ -149,7 +157,7 @@ public class OrderRepository :  IRepository<Order> {
 
                 await connection.ExecuteAsync(command, new {
                     Id = itemAdjustment.Item.Id,
-                    Qty = itemAdjustment.Qty
+                    Qty = itemAdjustment.AdjustedQty
                 }, trx);
 
             }

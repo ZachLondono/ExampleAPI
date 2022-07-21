@@ -4,12 +4,14 @@ namespace ExampleAPI.Orders.Domain;
 
 public static class Events {
 
-    public record ItemAddedEvent(OrderedItem Item, string Name, int Qty) : IDomainEvent;
+    public record OrderEvent() : DomainEvent;
 
-    public record ItemRemovedEvent(OrderedItem Item) : IDomainEvent;
+    public record ItemAddedEvent(OrderedItem Item, string Name, int Qty) : OrderEvent;
 
-    public record ItemQtyAdjustedEvent(OrderedItem Item, int Qty) : IDomainEvent;
+    public record ItemRemovedEvent(OrderedItem Item) : OrderEvent;
 
-    public record OrderNameChangedEvent(string name) : IDomainEvent;
+    public record ItemQtyAdjustedEvent(OrderedItem Item, int AdjustedQty) : OrderEvent;
+
+    public record OrderNameChangedEvent(string Name) : OrderEvent;
 
 }
