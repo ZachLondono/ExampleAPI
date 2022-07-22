@@ -1,4 +1,6 @@
 using ExampleAPI.Common;
+using ExampleAPI.Companies.Data;
+using ExampleAPI.Companies.Domain;
 using ExampleAPI.Orders.Data;
 using ExampleAPI.Orders.Domain;
 using MediatR;
@@ -15,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(typeof(Program).Assembly);
 builder.Services.AddTransient<IRepository<Order>, OrderRepository>();
+builder.Services.AddTransient<IRepository<Company>, CompanyRepository>();
 builder.Services.AddTransient<NpgsqlOrderConnectionFactory>();
 builder.Services.AddTransient<INotificationHandler<OrderEvent>, OrderEventHandler<OrderEvent>>();
 
