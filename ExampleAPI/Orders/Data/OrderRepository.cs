@@ -93,7 +93,7 @@ public class OrderRepository :  IRepository<Order> {
                 const string command = "UPDATE orders SET name = @Name WHERE id = @Id;";
 
                 await _connection.ExecuteAsync(command, new {
-                    entity.Name,
+                    nameChanged.Name,
                     entity.Id
                 }, trx);
 

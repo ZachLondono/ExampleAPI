@@ -9,6 +9,39 @@ CREATE DATABASE exampleapi
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
 
+-- Table: public.companies
+
+-- DROP TABLE IF EXISTS public.companies;
+
+CREATE TABLE IF NOT EXISTS public.companies
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    line1 character varying(255) COLLATE pg_catalog."default",
+    line2 character varying(255) COLLATE pg_catalog."default",
+    city character varying(255) COLLATE pg_catalog."default",
+    state character varying(255) COLLATE pg_catalog."default",
+    zip character varying(255) COLLATE pg_catalog."default",
+    CONSTRAINT companies_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+-- Table: public.company_events
+
+-- DROP TABLE IF EXISTS public.company_events;
+
+CREATE TABLE IF NOT EXISTS public.company_events
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    data json NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT company_events_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
 -- Table: public.order_events
 
 -- DROP TABLE IF EXISTS public.order_events;
