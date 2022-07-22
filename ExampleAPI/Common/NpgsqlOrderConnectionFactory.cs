@@ -1,8 +1,7 @@
-﻿using ExampleAPI.Common;
-using Npgsql;
+﻿using Npgsql;
 using System.Data;
 
-namespace ExampleAPI.Orders.Data;
+namespace ExampleAPI.Common;
 
 public class NpgsqlOrderConnectionFactory : IDbConnectionFactory {
 
