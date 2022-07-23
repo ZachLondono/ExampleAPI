@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class SetAddress {
 
-    public record Command(int CompanyId, AddressDTO NewAddress) : IRequest<IActionResult>;
+    public record Command(Guid CompanyId, AddressDTO NewAddress) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

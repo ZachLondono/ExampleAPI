@@ -18,19 +18,21 @@ public class CompanyRepository : IRepository<Company> {
 
     public async Task<Company> Create() {
 
-        const string query = "INSERT INTO companies (name) VALUES (@Name) RETURNING id;";
+        const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
         const string defaultName = "New Company";
 
-        int newId = await _connection.QuerySingleAsync<int>(query, new { Name = defaultName });
+        Guid newId = Guid.NewGuid();
+
+        await _connection.ExecuteAsync(query, new { Id = newId, Name = defaultName });
 
         _ = _publisher.Publish(new Events.CompanyCreatedEvent(newId));
 
-        return new(newId, defaultName, null);
+        return new(newId, defaultName, new());
 
     }
 
-    public async Task<Company?> Get(int id) {
+    public async Task<Company?> Get(Guid id) {
 
         const string query = "SELECT id, name, line1, line2, city, state, zip FROM companies WHERE id = @Id;";
 

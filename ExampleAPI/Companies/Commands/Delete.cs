@@ -7,7 +7,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class Delete {
 
-    public record Command(int CompanyId) : IRequest<IActionResult>;
+    public record Command(Guid CompanyId) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

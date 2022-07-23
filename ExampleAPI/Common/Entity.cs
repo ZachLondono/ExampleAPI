@@ -5,13 +5,13 @@ namespace ExampleAPI.Common;
 
 public abstract class Entity {
     
-    public int Id { get; init; }
+    public Guid Id { get; init; }
 
     protected List<DomainEvent> _events = new();
     [JsonIgnore]
     public IEnumerable<DomainEvent> Events => _events;
 
-    public Entity(int id) => Id = id;
+    public Entity(Guid id) => Id = id;
 
     public void ClearEvents() => _events.Clear();
 

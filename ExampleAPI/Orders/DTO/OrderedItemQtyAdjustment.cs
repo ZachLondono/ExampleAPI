@@ -5,7 +5,7 @@
 /// </summary>
 public class OrderedItemQtyAdjustment {
 
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public int NewQty { get; set; }
 

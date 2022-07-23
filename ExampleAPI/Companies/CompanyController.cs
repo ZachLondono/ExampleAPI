@@ -35,7 +35,7 @@ public class CompanyController : ControllerBase {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> Get(int companyId) {
+    public Task<IActionResult> Get(Guid companyId) {
         _logger.LogInformation("Getting company {companyId}", companyId);
         return _sender.Send(new Get.Query(companyId));
     }
@@ -44,7 +44,7 @@ public class CompanyController : ControllerBase {
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int companyId) {
+    public async Task<IActionResult> Delete(Guid companyId) {
         _logger.LogInformation("Deleting company {companyId}", companyId);
         return await _sender.Send(new Delete.Command(companyId));
     }
@@ -53,7 +53,7 @@ public class CompanyController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> SetName(int companyId, string newName) {
+    public Task<IActionResult> SetName(Guid companyId, string newName) {
         _logger.LogInformation("Updating company name {companyId}", companyId);
         return _sender.Send(new SetName.Command(companyId, newName));
     }
@@ -62,7 +62,7 @@ public class CompanyController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> SetAddress(int companyId, [FromBody] AddressDTO newAddress) {
+    public Task<IActionResult> SetAddress(Guid companyId, [FromBody] AddressDTO newAddress) {
         _logger.LogInformation("Setting address for company {companyId}", companyId);
         return _sender.Send(new SetAddress.Command(companyId, newAddress));
     }
