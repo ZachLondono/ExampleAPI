@@ -29,7 +29,19 @@ public class Create {
 
             await _repository.Save(company);
 
-            return new OkObjectResult(company);
+            var dto = new CompanyDTO() {
+                Id = company.Id,
+                Name = company.Name,
+                Address = new() {
+                    Line1 = company.Address.Line1,
+                    Line2 = company.Address.Line2,
+                    City = company.Address.City,
+                    State = company.Address.State,
+                    Zip = company.Address.Zip
+                }
+            };
+
+            return new OkObjectResult(dto);
 
         }
     }
