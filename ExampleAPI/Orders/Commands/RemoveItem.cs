@@ -19,6 +19,8 @@ public class RemoveItem {
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
+            //TODO: return a representation of the current order resource, rather than no content
+
             var order = await _repository.Get(request.OrderId);
 
             if (order is null) {
