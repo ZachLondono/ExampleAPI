@@ -6,5 +6,4 @@ public class NewOrder {
 
     public IEnumerable<NewOrderedItem> NewItems { get; set; } = Enumerable.Empty<NewOrderedItem>();
 
-
 }

@@ -18,17 +18,18 @@ public class OrderRepository :  IRepository<Order> {
 
     public async Task<Order> Create() {
 
-        const string command = "INSERT INTO orders (name) values (@Name) RETURNING id;";
+        const string command = "INSERT INTO orders (id, name) values (@Id, @Name);";
 
         const string defaultName = "New Order";
+        Guid newId = Guid.NewGuid();
 
-        int newId = await _connection.QuerySingleAsync<int>(command, new { Name = defaultName });
+        await _connection.ExecuteAsync(command, new { Id = newId, Name = defaultName });
 
         return new(newId, defaultName, Enumerable.Empty<OrderedItem>());
 
     }
 
-    public async Task<Order?> Get(int id) {
+    public async Task<Order?> Get(Guid id) {
         const string orderQuery = "SELECT id, name FROM orders WHERE id = @Id;";
 
         var orderData = await _connection.QuerySingleOrDefaultAsync<OrderData>(orderQuery, new { Id = id });
@@ -62,12 +63,12 @@ public class OrderRepository :  IRepository<Order> {
 
     }
 
-    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, int orderId, IDbTransaction? transaction = null) {
+    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction? transaction = null) {
         const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
 
         var itemsData = await connection.QueryAsync<OrderedItemData>(itemQuery, new { OrderId = orderId }, transaction);
 
-        List<OrderedItem> items = new List<OrderedItem>();
+        List<OrderedItem> items = new();
         foreach (var item in itemsData) {
             items.Add(new(item.Id, item.Name, item.Qty));
         }
@@ -99,27 +100,19 @@ public class OrderRepository :  IRepository<Order> {
 
             } else if (domainEvent is Events.ItemAddedEvent itemAdded) {
 
-                const string command = "INSERT INTO ordereditems (name, qty, orderid) VALUES (@Name, @Qty, @Id) RETURNING id;";
-                int newItemId = await _connection.QuerySingleAsync<int>(command, new {
+                const string command = "INSERT INTO ordereditems (id, name, qty, orderid) VALUES (@Id, @Name, @Qty, @OrderId);";
+                await _connection.ExecuteAsync(command, new {
+                    Id = itemAdded.ItemId,
                     itemAdded.Name,
                     itemAdded.Qty,
-                    entity.Id
+                    OrderId = entity.Id
                 }, trx);
-
-                var prop = itemAdded.Item
-                                    .GetType()
-                                    .GetProperty("Id");
-
-                prop?.SetValue(itemAdded.Item, newItemId);
 
             } else if (domainEvent is Events.ItemRemovedEvent itemRemoved) {
 
-                // If the item has not yet been persisted, there is no need to try to delete it
-                if (itemRemoved.Item.Id <= 0) continue;
-
                 const string command = "DELETE FROM ordereditems WHERE id = @Id;";
                 await _connection.ExecuteAsync(command, new {
-                    itemRemoved.Item.Id,
+                    Id = itemRemoved.ItemId,
                 }, trx);
 
             }
@@ -128,7 +121,6 @@ public class OrderRepository :  IRepository<Order> {
 
         foreach (var item in entity.Items) {
 
-            if (item.Id <= 0) continue;
             await SaveItem(entity, item, _connection, trx);
 
         }
@@ -154,7 +146,7 @@ public class OrderRepository :  IRepository<Order> {
                 const string command = "UPDATE ordereditems SET qty = @Qty WHERE id = @Id;";
 
                 await connection.ExecuteAsync(command, new {
-                    Id = itemAdjustment.Item.Id,
+                    Id = itemAdjustment.ItemId,
                     Qty = itemAdjustment.AdjustedQty
                 }, trx);
 

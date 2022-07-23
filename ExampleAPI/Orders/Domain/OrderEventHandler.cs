@@ -21,15 +21,15 @@ public class OrderEventHandler<TNotification> : INotificationHandler<TNotificati
 
     public async Task Handle(TNotification notification, CancellationToken cancellationToken) {
         _logger.LogInformation("Storing order event {EventName}", notification.GetType().Name);
-        const string command = "insert into order_events(name, data) values(@Name, @Data)";
-        try { 
-            await _connection.ExecuteAsync(command, new {
-                Name = notification.GetType().Name,
-                Data = new JsonParameter(JsonSerializer.Serialize(notification))
-            });
-        } catch (Exception e) {
-            _logger.LogError("Exception occurred while trying to store event {Exception}", e);
-        }
+        //const string command = "insert into order_events(name, data) values(@Name, @Data)";
+        //try { 
+        //    await _connection.ExecuteAsync(command, new {
+        //        Name = notification.GetType().Name,
+        //        Data = new JsonParameter(JsonSerializer.Serialize(notification))
+        //    });
+        //} catch (Exception e) {
+        //    _logger.LogError("Exception occurred while trying to store event {Exception}", e);
+        //}
     }
 
 }

@@ -1,4 +1,5 @@
 using ExampleAPI.Orders.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -10,7 +11,7 @@ public class OrderTests {
     public void Should_AddItemToOrder() {
 
         // Arrange
-        var order = new Order(0, "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act 
         var item = order.AddItem("New Item", 5);
@@ -24,7 +25,7 @@ public class OrderTests {
     public void Should_CreateEvent_WhenAddingItem() {
 
         // Arrange
-        var order = new Order(0, "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act 
         var item = order.AddItem("New Item", 5);
@@ -32,7 +33,7 @@ public class OrderTests {
         // Assert
         Assert.Contains(order.Events, (e) => {
             if (e is Events.ItemAddedEvent itemAdded) {
-                return itemAdded.Name == item.Name && itemAdded.Qty == item.Qty && itemAdded.Item.Equals(item);
+                return itemAdded.Name == item.Name && itemAdded.Qty == item.Qty && itemAdded.ItemId.Equals(item.Id);
             }
 
             return false;
@@ -44,9 +45,9 @@ public class OrderTests {
     public void Should_RemoveItemFromOrder() {
 
         // Arrange
-        var item = new OrderedItem(1, "New Item", 5);
+        var item = new OrderedItem(Guid.NewGuid(), "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(0, "Test Order", items);
+        var order = new Order(Guid.NewGuid(), "Test Order", items);
 
         // Act 
         order.RemoveItem(item);
@@ -60,9 +61,9 @@ public class OrderTests {
     public void Should_CreateEvent_WhenRemovingItemFromOrder() {
 
         // Arrange
-        var item = new OrderedItem(1, "New Item", 5);
+        var item = new OrderedItem(Guid.NewGuid(), "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(0, "Test Order", items);
+        var order = new Order(Guid.NewGuid(), "Test Order", items);
 
         // Act 
         order.RemoveItem(item);
@@ -70,7 +71,7 @@ public class OrderTests {
         // Assert
         Assert.Contains(order.Events, (e) => {
             if (e is Events.ItemRemovedEvent itemRemoved) {
-                return itemRemoved.Item.Equals(item);
+                return itemRemoved.ItemId.Equals(item.Id);
             }
 
             return false;
@@ -82,7 +83,7 @@ public class OrderTests {
     public void Should_ChangeName() {
 
         // Arrange
-        var order = new Order(0, "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act
         string newName = "Changed Name";
@@ -97,7 +98,7 @@ public class OrderTests {
     public void Should_CreateEvent_WhenChangingName() {
 
         // Arrange
-        var order = new Order(0, "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act
         string newName = "Changed Name";

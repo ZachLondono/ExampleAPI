@@ -33,7 +33,7 @@ public class GetAll {
 
         }
         
-        private static async Task<IEnumerable<OrderedItemDTO>> GetItemsFromOrderId(IDbConnection connection, int orderId, IDbTransaction? transaction = null) {
+        private static async Task<IEnumerable<OrderedItemDTO>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction? transaction = null) {
             const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
             return await connection.QueryAsync<OrderedItemDTO>(itemQuery, new { OrderId = orderId }, transaction);
         }

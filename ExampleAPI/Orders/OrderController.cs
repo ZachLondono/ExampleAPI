@@ -40,7 +40,7 @@ public class OrderController : ControllerBase {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> Get(int orderId) {
+    public Task<IActionResult> Get(Guid orderId) {
         _logger.LogInformation("Getting order {orderId}", orderId);
         return _sender.Send(new Get.Query(orderId));
     }
@@ -49,7 +49,7 @@ public class OrderController : ControllerBase {
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int orderId) {
+    public async Task<IActionResult> Delete(Guid orderId) {
         _logger.LogInformation("Deleting order {orderId}", orderId);
         return await _sender.Send(new Delete.Command(orderId));
     }
@@ -58,7 +58,7 @@ public class OrderController : ControllerBase {
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteItem(int orderId, int itemId) {
+    public async Task<IActionResult> DeleteItem(Guid orderId, Guid itemId) {
         _logger.LogInformation("Deleting ordered item {itemId} from order {orderId}", itemId, orderId);
         return await _sender.Send(new RemoveItem.Command(orderId, itemId));
     }
@@ -67,7 +67,7 @@ public class OrderController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> SetName(int orderId, string newName) {
+    public Task<IActionResult> SetName(Guid orderId, string newName) {
         _logger.LogInformation("Updating order name {orderId}", orderId);
         return _sender.Send(new SetName.Command(orderId, newName));
     }
@@ -76,7 +76,7 @@ public class OrderController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> AddItem(int orderId, [FromBody] NewOrderedItem newItem) {
+    public Task<IActionResult> AddItem(Guid orderId, [FromBody] NewOrderedItem newItem) {
         _logger.LogInformation("Adding item to order {orderId}", orderId);
         return _sender.Send(new AddItem.Command(orderId, newItem));
     }
@@ -85,7 +85,7 @@ public class OrderController : ControllerBase {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderedItemDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> AdjustItemQty(int orderId, [FromBody] OrderedItemQtyAdjustment itemAdjustment) {
+    public Task<IActionResult> AdjustItemQty(Guid orderId, [FromBody] OrderedItemQtyAdjustment itemAdjustment) {
         _logger.LogInformation("Adjusting item order qty {orderId}", orderId);
         return _sender.Send(new AdjustItemQty.Command(orderId, itemAdjustment));
     }

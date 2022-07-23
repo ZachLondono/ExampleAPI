@@ -6,10 +6,10 @@ public static class Events {
 
     public record CompanyEvent() : DomainEvent;
 
-    public record CompanyCreatedEvent(int CompanyId) : CompanyEvent;
+    public record CompanyCreatedEvent(Guid CompanyId) : CompanyEvent;
 
-    public record AddressChangedEvent(int CompanyId, Address NewAddress) : CompanyEvent;
+    public record AddressChangedEvent(Guid CompanyId, Address NewAddress) : CompanyEvent;
 
-    public record NameChangedEvent(int CompanyId, string Name) : CompanyEvent;
+    public record NameChangedEvent(Guid CompanyId, string Name) : CompanyEvent;
 
 }

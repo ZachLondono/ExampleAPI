@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class AdjustItemQty {
 
-    public record Command(int OrderId, OrderedItemQtyAdjustment ItemAdjustment) : IRequest<IActionResult>;
+    public record Command(Guid OrderId, OrderedItemQtyAdjustment ItemAdjustment) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

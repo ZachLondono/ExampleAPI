@@ -20,4 +20,12 @@ public record Address {
         Zip = zip;
     }
 
+    public Address() {
+        Line1 = string.Empty;
+        Line2 = string.Empty;
+        City = string.Empty;
+        State = string.Empty;
+        Zip = string.Empty;
+    }
+
 }

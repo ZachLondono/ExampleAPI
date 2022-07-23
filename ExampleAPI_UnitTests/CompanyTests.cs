@@ -1,6 +1,7 @@
 ﻿using ExampleAPI.Companies.Domain;
 using Xunit;
 using FluentAssertions;
+using System;
 
 namespace ExampleAPI_UnitTests;
 
@@ -10,7 +11,7 @@ public class CompanyTests {
     public void Should_SetCompanyName() {
 
         // Arrange 
-        var company = new Company(0, "New Company", null);
+        var company = new Company(Guid.NewGuid(), "New Company", new());
         var newName = "New Name";
 
         // Act
@@ -25,7 +26,7 @@ public class CompanyTests {
     public void Should_CreateEvent_WhenSetingCompanyName() {
 
         // Arrange 
-        var company = new Company(0, "New Company", null);
+        var company = new Company(Guid.NewGuid(), "New Company", new());
         var newName = "New Name";
 
         // Act
@@ -46,7 +47,7 @@ public class CompanyTests {
     public void Should_SetCompanyAddress() {
 
         // Arrange 
-        var company = new Company(0, "New Company", null);
+        var company = new Company(Guid.NewGuid(), "New Company", new());
         var newAddr = new Address("A", "B", "C", "D", "E");
 
         // Act
@@ -61,7 +62,7 @@ public class CompanyTests {
     public void Should_CreateEvent_WhenSetingCompanyAddress() {
         
         // Arrange 
-        var company = new Company(0, "New Company", null);
+        var company = new Company(Guid.NewGuid(), "New Company", new());
         var newAddr = new Address("A", "B", "C", "D", "E");
 
         // Act

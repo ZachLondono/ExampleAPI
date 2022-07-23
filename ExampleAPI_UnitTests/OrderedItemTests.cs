@@ -1,4 +1,5 @@
 ﻿using ExampleAPI.Orders.Domain;
+using System;
 using Xunit;
 
 namespace ExampleAPI_UnitTests;
@@ -9,7 +10,7 @@ public class OrderedItemTests {
     public void Should_AdjustItemQty() {
 
         // Arrange
-        var item = new OrderedItem(1, "Test Item", 1);
+        var item = new OrderedItem(Guid.NewGuid(), "Test Item", 1);
         int newQty = 2;
 
         // Act 
@@ -24,7 +25,7 @@ public class OrderedItemTests {
     public void Should_CreateEvent_WhenAdjustingItemQty() {
 
         // Arrange
-        var item = new OrderedItem(1, "Test Item", 1);
+        var item = new OrderedItem(Guid.NewGuid(), "Test Item", 1);
         int newQty = 2;
 
         // Act 
@@ -33,7 +34,7 @@ public class OrderedItemTests {
         // Assert
         Assert.Contains(item.Events, (e) => {
             if (e is Events.ItemQtyAdjustedEvent itemAdjusted) {
-                return itemAdjusted.Item.Equals(item) && itemAdjusted.Item.Qty == newQty;
+                return itemAdjusted.ItemId.Equals(item.Id) && itemAdjusted.AdjustedQty== newQty;
             }
 
             return false;

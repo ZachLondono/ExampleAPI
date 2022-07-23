@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class AddItem {
 
-    public record Command(int OrderId, NewOrderedItem NewItem) : IRequest<IActionResult>;
+    public record Command(Guid OrderId, NewOrderedItem NewItem) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -31,7 +31,7 @@ public class AddItem {
             await _repository.Save(order);
 
             var itemDTOs = new List<OrderedItemDTO>();
-            foreach (var item in order.Items.Where(i => i.Id > 0)) {
+            foreach (var item in order.Items) {
                 itemDTOs.Add(new() {
                     Id = item.Id,
                     Name = item.Name,

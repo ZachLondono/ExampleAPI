@@ -6,9 +6,9 @@ public class Company : Entity {
 
     public string Name { get; private set; }
 
-    public Address? Address { get; private set; }
+    public Address Address { get; private set; }
 
-    public Company(int id, string name, Address? address) : base(id) {
+    public Company(Guid id, string name, Address address) : base(id) {
         Name = name;
         Address = address;
     }

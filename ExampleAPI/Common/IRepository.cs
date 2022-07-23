@@ -4,7 +4,7 @@ public interface IRepository<T> where T : Entity {
 
     Task<T> Create();
 
-    Task<T?> Get(int id);
+    Task<T?> Get(Guid id);
 
     Task Save(T entity);
 
