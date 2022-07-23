@@ -22,7 +22,7 @@ public class Create {
 
             var company = await _repository.Create();
             company.SetName(request.NewCompany.Name);
-            if (request.NewCompany.Address is not null) {
+            if (request.NewCompany.Address is not null && request.NewCompany.Address is not { Line1: "", Line2: "", City: "", State: "", Zip: "" }) {
                 var addr = request.NewCompany.Address;
                 company.SetAddress(new(addr.Line1, addr.Line2, addr.City, addr.State, addr.Zip));
             }
