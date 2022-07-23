@@ -24,7 +24,7 @@ public class OrderController : ControllerBase {
     }
 
     [HttpPost]
-    public Task<OrderDTO> Create([FromBody] NewOrder newOrder) {
+    public Task<IActionResult> Create([FromBody] NewOrder newOrder) {
         _logger.LogInformation("Creating new order");
         return _sender.Send(new Create.Command(newOrder));        
     }

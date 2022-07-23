@@ -2,14 +2,15 @@
 using ExampleAPI.Orders.Domain;
 using ExampleAPI.Orders.DTO;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ExampleAPI.Orders.Commands;
 
 public class Create {
 
-    public record Command(NewOrder NewOrder) : IRequest<OrderDTO>;
+    public record Command(NewOrder NewOrder) : IRequest<IActionResult>;
 
-    public class Handler : IRequestHandler<Command, OrderDTO> {
+    public class Handler : IRequestHandler<Command, IActionResult> {
 
         private readonly IRepository<Order> _repository;
 
@@ -17,7 +18,7 @@ public class Create {
             _repository = repository;
         }
 
-        public async Task<OrderDTO> Handle(Command request, CancellationToken cancellationToken) {
+        public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
             
             var order = await _repository.Create();
             order.SetName(request.NewOrder.Name);
@@ -37,11 +38,13 @@ public class Create {
                 });
             }
 
-            return new OrderDTO() {
+            var newOrder = new OrderDTO() {
                 Id = order.Id,
                 Name = order.Name,
                 Items = itemDTOs
             };
+
+            return new OkObjectResult(newOrder);
 
         }
 
