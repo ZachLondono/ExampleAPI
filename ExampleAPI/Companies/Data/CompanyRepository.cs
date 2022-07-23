@@ -40,7 +40,7 @@ public class CompanyRepository : IRepository<Company> {
 
         if (companyData is null) return null;
 
-        Address? address = null;
+        Address address = new();
         if (companyData.Line1 is not null &&
             companyData.City is not null &&
             companyData.State is not null &&
