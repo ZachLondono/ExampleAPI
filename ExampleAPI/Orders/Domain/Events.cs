@@ -1,17 +1,20 @@
 ﻿using ExampleAPI.Common;
+using System.Text.Json.Serialization;
 
 namespace ExampleAPI.Orders.Domain;
 
 public static class Events {
 
-    public record OrderEvent() : DomainEvent;
+    public record OrderEvent([property: JsonIgnore] Guid OrderId) : DomainEvent(OrderId);
 
-    public record ItemAddedEvent(Guid ItemId, string Name, int Qty) : OrderEvent;
+    public record ItemAddedEvent(Guid OrderId, Guid ItemId, string Name, int Qty) : OrderEvent(OrderId);
 
-    public record ItemRemovedEvent(Guid ItemId) : OrderEvent;
+    public record ItemRemovedEvent(Guid OrderId, Guid ItemId) : OrderEvent(OrderId);
 
-    public record ItemQtyAdjustedEvent(Guid ItemId, int AdjustedQty) : OrderEvent;
+    public record ItemQtyAdjustedEvent(Guid OrderId, Guid ItemId, int AdjustedQty) : OrderEvent(OrderId);
 
-    public record OrderNameChangedEvent(string Name) : OrderEvent;
+    public record OrderNameChangedEvent(Guid OrderId, string Name) : OrderEvent(OrderId);
+
+    public record OrderCreatedEvent(Guid OrderId, string Name) : OrderEvent(OrderId);
 
 }

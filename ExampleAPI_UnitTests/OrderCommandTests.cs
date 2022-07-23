@@ -100,7 +100,7 @@ public class OrderCommandTests {
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
             .ReturnsAsync(() => new(order_id, "Example Order", new List<OrderedItem>() {
-                new(item_id, "Example Item", original_qty)
+                new(item_id,order_id, "Example Item", original_qty)
             }));
 
         var repo = mock.Object;
@@ -333,7 +333,7 @@ public class OrderCommandTests {
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
             .ReturnsAsync(() => new(order_id, "Example Order", new List<OrderedItem>() {
-                new(item_id, "Example Item", 5)
+                new(item_id, order_id, "Example Item", 5)
             }));
 
         var repo = mock.Object;

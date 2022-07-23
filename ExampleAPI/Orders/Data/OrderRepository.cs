@@ -25,6 +25,8 @@ public class OrderRepository :  IRepository<Order> {
 
         await _connection.ExecuteAsync(command, new { Id = newId, Name = defaultName });
 
+        await _publisher.Publish(new Events.OrderCreatedEvent(newId, defaultName));
+
         return new(newId, defaultName, Enumerable.Empty<OrderedItem>());
 
     }
@@ -70,7 +72,7 @@ public class OrderRepository :  IRepository<Order> {
 
         List<OrderedItem> items = new();
         foreach (var item in itemsData) {
-            items.Add(new(item.Id, item.Name, item.Qty));
+            items.Add(new(item.Id, orderId, item.Name, item.Qty));
         }
 
         return items;
@@ -128,10 +130,10 @@ public class OrderRepository :  IRepository<Order> {
         trx.Commit();
         _connection.Close();
 
-        entity.PublishEvents(_publisher);
+        await entity.PublishEvents(_publisher);
         entity.ClearEvents();
         foreach (var item in entity.Items) {
-            item.PublishEvents(_publisher);
+            await item.PublishEvents(_publisher);
             item.ClearEvents();
         }
 

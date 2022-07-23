@@ -15,19 +15,19 @@ public class Order : Entity {
     }
 
     public void SetName(string name) {
-        AddEvent(new Events.OrderNameChangedEvent(name));
+        AddEvent(new Events.OrderNameChangedEvent(Id, name));
         Name = name;
     }
 
     public OrderedItem AddItem(string name, int qty) {
-        var item = new OrderedItem(Guid.NewGuid(), name, qty);
-        AddEvent(new Events.ItemAddedEvent(item.Id, name, qty));
+        var item = new OrderedItem(Guid.NewGuid(), Id, name, qty);
+        AddEvent(new Events.ItemAddedEvent(Id, item.Id, name, qty));
         _items.Add(item);
         return item;
     }
 
     public void RemoveItem(OrderedItem item) {
-        AddEvent(new Events.ItemRemovedEvent(item.Id));
+        AddEvent(new Events.ItemRemovedEvent(Id, item.Id));
         _items.Remove(item);
     }
 

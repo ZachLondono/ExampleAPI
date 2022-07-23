@@ -10,7 +10,7 @@ public class OrderedItemTests {
     public void Should_AdjustItemQty() {
 
         // Arrange
-        var item = new OrderedItem(Guid.NewGuid(), "Test Item", 1);
+        var item = new OrderedItem(Guid.NewGuid(), Guid.NewGuid(), "Test Item", 1);
         int newQty = 2;
 
         // Act 
@@ -25,7 +25,7 @@ public class OrderedItemTests {
     public void Should_CreateEvent_WhenAdjustingItemQty() {
 
         // Arrange
-        var item = new OrderedItem(Guid.NewGuid(), "Test Item", 1);
+        var item = new OrderedItem(Guid.NewGuid(), Guid.NewGuid(), "Test Item", 1);
         int newQty = 2;
 
         // Act 

@@ -8,6 +8,7 @@ public abstract class Entity {
     public Guid Id { get; init; }
 
     protected List<DomainEvent> _events = new();
+
     [JsonIgnore]
     public IEnumerable<DomainEvent> Events => _events;
 
@@ -17,9 +18,9 @@ public abstract class Entity {
 
     protected void AddEvent(DomainEvent domainEvent) => _events.Add(domainEvent);
 
-    public void PublishEvents(IPublisher publisher) {
+    public async Task PublishEvents(IPublisher publisher) {
         foreach (DomainEvent domainEvent in _events) {
-            domainEvent.Publish(publisher);
+            await domainEvent.Publish(publisher);
         }
     }
 

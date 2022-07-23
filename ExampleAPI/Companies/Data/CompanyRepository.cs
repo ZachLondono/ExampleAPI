@@ -26,7 +26,7 @@ public class CompanyRepository : IRepository<Company> {
 
         await _connection.ExecuteAsync(query, new { Id = newId, Name = defaultName });
 
-        _ = _publisher.Publish(new Events.CompanyCreatedEvent(newId));
+        await _publisher.Publish(new Events.CompanyCreatedEvent(newId, defaultName));
 
         return new(newId, defaultName, new());
 
@@ -108,7 +108,7 @@ public class CompanyRepository : IRepository<Company> {
         trx.Commit();
         _connection.Close();
 
-        entity.PublishEvents(_publisher);
+        await entity.PublishEvents(_publisher);
 
     }
 
