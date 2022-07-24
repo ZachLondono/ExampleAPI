@@ -25,6 +25,21 @@ public class SetName {
                 return new NotFoundResult();
             }
 
+            var etag = request.Context.Request.Headers.ETag;
+            if (etag.Count > 0) {
+
+                try {
+                    var version = int.Parse(etag.ToString());
+
+                    if (version != order.Version)
+                        return new StatusCodeResult(412);
+
+                } catch (FormatException) {
+                    // Log invalid etag
+                }
+
+            }
+
             order.SetName(request.NewName.Name);
 
             await _repository.Save(order);

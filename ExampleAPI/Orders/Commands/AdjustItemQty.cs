@@ -25,6 +25,21 @@ public class AdjustItemQty {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
+            var etag = request.Context.Request.Headers.ETag;
+            if (etag.Count > 0) {
+
+                try {
+                    var version = int.Parse(etag.ToString());
+
+                    if (version != order.Version)
+                        return new StatusCodeResult(412);
+
+                } catch (FormatException) {
+                    // Log invalid etag
+                }
+
+            }
+
             OrderedItem? item = order.Items.SingleOrDefault(i => i.Id == request.ItemId);
             if (item is null) {
                 return new NotFoundObjectResult($"Item with id '{request.ItemId}' not found.");

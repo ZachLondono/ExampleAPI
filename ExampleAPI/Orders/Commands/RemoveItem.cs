@@ -27,6 +27,21 @@ public class RemoveItem {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
+            var etag = request.Context.Request.Headers.ETag;
+            if (etag.Count > 0) {
+
+                try {
+                    var version = int.Parse(etag.ToString());
+
+                    if (version != order.Version)
+                        return new StatusCodeResult(412);
+
+                } catch (FormatException) {
+                    // Log invalid etag
+                }
+
+            }
+
             var item = order.Items.FirstOrDefault(i => i.Id == request.ItemId);
 
             if (item is null) {

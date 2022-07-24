@@ -26,6 +26,21 @@ public class SetAddress {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
             }
 
+            var etag = request.Context.Request.Headers.ETag;
+            if (etag.Count > 0) {
+
+                try {
+                    var version = int.Parse(etag.ToString());
+
+                    if (version != company.Version)
+                        return new StatusCodeResult(412);
+
+                } catch (FormatException) {
+                    // Log invalid etag
+                }
+
+            }
+
             company.SetAddress(new Address(request.NewAddress.Line1,
                                             request.NewAddress.Line2,
                                             request.NewAddress.City,

@@ -26,6 +26,21 @@ public class AddItem {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
+            var etag = request.Context.Request.Headers.ETag;
+            if (etag.Count > 0) {
+
+                try { 
+                    var version = int.Parse(etag.ToString());
+
+                    if (version != order.Version)
+                        return new StatusCodeResult(412);
+
+                } catch (FormatException) {
+                    // Log invalid etag
+                }
+
+            }
+
             var newItem = order.AddItem(request.NewItem.Name, request.NewItem.Qty);
 
             await _repository.Save(order);
