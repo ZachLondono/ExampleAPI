@@ -47,7 +47,7 @@ public class OrderRepository :  IRepository<Order> {
 
         var items = await GetItemsFromOrderId(_connection, id);
 
-        var order =  new Order(orderData.Id, 0, orderData.Name, items);
+        var order =  new Order(orderData.Id, orderData.Version, orderData.Name, items);
 
         return order;
     }
@@ -62,7 +62,7 @@ public class OrderRepository :  IRepository<Order> {
 
             var items = await GetItemsFromOrderId(_connection, orderData.Id);
 
-            orders.Add(new(orderData.Id, 0, orderData.Name, items));
+            orders.Add(new(orderData.Id, orderData.Version, orderData.Name, items));
 
         }
 
@@ -129,7 +129,8 @@ public class OrderRepository :  IRepository<Order> {
         await entity.PublishEvents(_publisher);
         entity.ClearEvents();
         foreach (var item in entity.Items) {
-            await item.PublishEvents(_publisher);
+            int eventsPublished = await item.PublishEvents(_publisher);
+            entity.IncrementVersion(eventsPublished);
             item.ClearEvents();
         }
 

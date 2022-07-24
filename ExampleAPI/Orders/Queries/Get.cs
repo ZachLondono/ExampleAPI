@@ -32,6 +32,8 @@ public class Get {
             const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
             order.Items = await _connection.QueryAsync<OrderedItemDTO>(itemQuery, request);
 
+            request.Context.Response.Headers.ETag = order.Version.ToString();
+
             return new OkObjectResult(order);
 
         }

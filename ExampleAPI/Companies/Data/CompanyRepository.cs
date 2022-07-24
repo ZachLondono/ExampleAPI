@@ -42,7 +42,7 @@ public class CompanyRepository : IRepository<Company> {
             address = new Address(companyData.Line1, companyData.Line2 ?? "", companyData.City, companyData.State, companyData.Zip);
         }
 
-        var company = new Company(companyData.Id, 0, companyData.Name, address);
+        var company = new Company(companyData.Id, companyData.Version, companyData.Name, address);
 
         return company;
 
@@ -52,7 +52,7 @@ public class CompanyRepository : IRepository<Company> {
 
         const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies;";
 
-        var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, 0, c.Name, a), splitOn: "line1");
+        var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, c.Version, c.Name, a), splitOn: "line1");
 
         return companies;
 

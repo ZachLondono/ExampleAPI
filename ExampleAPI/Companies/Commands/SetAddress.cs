@@ -46,8 +46,11 @@ public class SetAddress {
 
             }
 
+            request.Context.Response.Headers.ETag = company.Version.ToString();
+
             return new OkObjectResult(new CompanyDTO() {
                 Id = company.Id,
+                Version = company.Version,
                 Name = company.Name,
                 Address = addrDto
             });

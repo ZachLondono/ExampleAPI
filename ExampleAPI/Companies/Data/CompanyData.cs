@@ -4,6 +4,8 @@ public class CompanyData {
 
     public Guid Id { get; set; }
 
+    public int Version { get; init; }
+
     public string Name { get; set; } = string.Empty;
 
     public string Line1 { get; set; } = string.Empty;

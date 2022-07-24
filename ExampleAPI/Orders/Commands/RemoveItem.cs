@@ -37,6 +37,8 @@ public class RemoveItem {
 
             await _repository.Save(order);
 
+            request.Context.Response.Headers.ETag = order.Version.ToString();
+
             return new NoContentResult();
 
         }

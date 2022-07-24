@@ -41,9 +41,13 @@ public class AddItem {
 
             var orderDto = new OrderDTO() {
                 Id = order.Id,
+                Version = order.Version,
                 Name = order.Name,
                 Items = itemDTOs
             };
+
+
+            request.Context.Response.Headers.ETag = order.Version.ToString();
 
             return new CreatedResult($"/orders/{orderDto.Id}/items/{newItem.Id}", orderDto);
 

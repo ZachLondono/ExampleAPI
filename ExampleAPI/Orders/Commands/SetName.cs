@@ -40,9 +40,12 @@ public class SetName {
 
             var orderDto = new OrderDTO() {
                 Id = order.Id,
+                Version = order.Version,
                 Name = order.Name,
                 Items = itemDTOs
             };
+
+            request.Context.Response.Headers.ETag = order.Version.ToString();
 
             return new OkObjectResult(orderDto);
         }

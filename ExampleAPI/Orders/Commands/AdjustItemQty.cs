@@ -44,6 +44,8 @@ public class AdjustItemQty {
                 Qty = item.Qty
             };
 
+            request.Context.Response.Headers.ETag = order.Version.ToString();
+
             return new OkObjectResult(itemDto);
         }
     }

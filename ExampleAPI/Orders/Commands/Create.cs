@@ -42,10 +42,13 @@ public class Create {
 
             var newOrder = new OrderDTO() {
                 Id = order.Id,
+                Version = order.Version,
                 Name = order.Name,
                 Items = itemDTOs
             };
-            
+
+            request.Context.Response.Headers.ETag = order.Version.ToString();
+
             return new CreatedResult($"/orders/{newOrder.Id}", newOrder);
 
         }

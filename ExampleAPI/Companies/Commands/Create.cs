@@ -28,6 +28,7 @@ public class Create {
 
             var companyDto = new CompanyDTO() {
                 Id = company.Id,
+                Version = company.Version,
                 Name = company.Name,
                 Address = new() {
                     Line1 = company.Address.Line1,
@@ -37,6 +38,8 @@ public class Create {
                     Zip = company.Address.Zip
                 }
             };
+
+            request.Context.Response.Headers.ETag = company.Version.ToString();
 
             return new CreatedResult($"/companies/{companyDto.Id}", companyDto);
 
