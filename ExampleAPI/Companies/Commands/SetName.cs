@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class SetName {
 
-    public record Command(Guid CompanyId, string NewName) : IRequest<IActionResult>;
+    public record Command(Guid CompanyId, NewCompanyName NewName) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
         
@@ -26,7 +26,7 @@ public class SetName {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
             }
 
-            company.SetName(request.NewName);
+            company.SetName(request.NewName.Name);
             await _repository.Save(company);
 
             var addrDto = new AddressDTO();

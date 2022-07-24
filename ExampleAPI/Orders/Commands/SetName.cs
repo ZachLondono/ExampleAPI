@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class SetName {
 
-    public record Command(Guid OrderId, string NewName) : IRequest<IActionResult>;
+    public record Command(Guid OrderId, NewOrderName NewName) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -25,7 +25,7 @@ public class SetName {
                 return new NotFoundResult();
             }
 
-            order.SetName(request.NewName);
+            order.SetName(request.NewName.Name);
 
             await _repository.Save(order);
 

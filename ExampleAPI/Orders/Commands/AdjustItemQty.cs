@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class AdjustItemQty {
 
-    public record Command(Guid OrderId, OrderedItemQtyAdjustment ItemAdjustment) : IRequest<IActionResult>;
+    public record Command(Guid OrderId, Guid ItemId, OrderedItemQtyAdjustment ItemAdjustment) : IRequest<IActionResult>;
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -25,17 +25,17 @@ public class AdjustItemQty {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
-            OrderedItem? item = order.Items.SingleOrDefault(i => i.Id == request.ItemAdjustment.Id);
+            OrderedItem? item = order.Items.SingleOrDefault(i => i.Id == request.ItemId);
             if (item is null) {
-                return new NotFoundObjectResult($"Item with id '{request.ItemAdjustment.Id}' not found.");
+                return new NotFoundObjectResult($"Item with id '{request.ItemId}' not found.");
             }
 
             item.AdjustQty(request.ItemAdjustment.NewQty);
             await _repository.Save(order);
 
-            item = order.Items.SingleOrDefault(i => i.Id == request.ItemAdjustment.Id);
+            item = order.Items.SingleOrDefault(i => i.Id == request.ItemId);
             if (item is null) {
-                return new NotFoundObjectResult($"Item with id '{request.ItemAdjustment.Id}' not found.");
+                return new NotFoundObjectResult($"Item with id '{request.ItemId}' not found.");
             }
 
             var itemDto = new OrderedItemDTO() {

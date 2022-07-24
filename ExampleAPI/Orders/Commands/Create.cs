@@ -45,8 +45,8 @@ public class Create {
                 Name = order.Name,
                 Items = itemDTOs
             };
-
-            return new OkObjectResult(newOrder);
+            
+            return new CreatedResult($"/orders/{newOrder.Id}", newOrder);
 
         }
 

@@ -1,42 +1,47 @@
-﻿using Dapper;
-using ExampleAPI.Common;
-using ExampleAPI.Orders.Commands;
-using ExampleAPI.Orders.Data;
-using ExampleAPI.Orders.Domain;
+﻿using ExampleAPI.Orders.Commands;
 using ExampleAPI.Orders.DTO;
 using ExampleAPI.Orders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 
 namespace ExampleAPI.Orders;
 
 [ApiController]
 [Route("[controller]")]
-public class OrderController : ControllerBase {
+public class OrdersController : ControllerBase {
 
-    private readonly ILogger<OrderController> _logger;
+    private readonly ILogger<OrdersController> _logger;
     private readonly ISender _sender;
 
-    public OrderController(ILogger<OrderController> logger, ISender sender) {
+    public OrdersController(ILogger<OrdersController> logger, ISender sender) {
         _logger = logger;
         _sender = sender;
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(OrderDTO))]
     public Task<IActionResult> Create([FromBody] NewOrder newOrder) {
         _logger.LogInformation("Creating new order");
         return _sender.Send(new Create.Command(newOrder));        
     }
 
-    [Route("GetAllOrders")]
+    [Route("{orderId}/items")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(OrderDTO))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public Task<IActionResult> AddItem(Guid orderId, [FromBody] NewOrderedItem newItem) {
+        _logger.LogInformation("Adding item to order {orderId}", orderId);
+        return _sender.Send(new AddItem.Command(orderId, newItem));
+    }
+
     [HttpGet]
-    public Task<IEnumerable<OrderDTO>> GetAll() {
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<OrderDTO>))]
+    public Task<IActionResult> GetAll() {
         _logger.LogInformation("Getting all orders");
         return _sender.Send(new GetAll.Query());
     }
 
-    [Route("GetOrder/{orderId}")]
+    [Route("{orderId}")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -45,7 +50,7 @@ public class OrderController : ControllerBase {
         return _sender.Send(new Get.Query(orderId));
     }
 
-    [Route("DeleteOrder/{orderId}")]
+    [Route("{orderId}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -54,7 +59,7 @@ public class OrderController : ControllerBase {
         return await _sender.Send(new Delete.Command(orderId));
     }
 
-    [Route("DeleteItem/{orderId}/{itemId}")]
+    [Route("{orderId}/items/{itemId}")]
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,31 +68,22 @@ public class OrderController : ControllerBase {
         return await _sender.Send(new RemoveItem.Command(orderId, itemId));
     }
 
-    [Route("SetName/{orderId}/{newName}")]
-    [HttpPost]
+    [Route("{orderId}/name")]
+    [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> SetName(Guid orderId, string newName) {
+    public Task<IActionResult> SetName(Guid orderId, [FromBody] NewOrderName newName) {
         _logger.LogInformation("Updating order name {orderId}", orderId);
         return _sender.Send(new SetName.Command(orderId, newName));
     }
 
-    [Route("AddItem/{orderId}")]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderDTO))]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> AddItem(Guid orderId, [FromBody] NewOrderedItem newItem) {
-        _logger.LogInformation("Adding item to order {orderId}", orderId);
-        return _sender.Send(new AddItem.Command(orderId, newItem));
-    }
-
-    [Route("AdjustItem/{orderId}")]
-    [HttpPost]
+    [Route("{orderId}/items/{itemId}")]
+    [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderedItemDTO))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> AdjustItemQty(Guid orderId, [FromBody] OrderedItemQtyAdjustment itemAdjustment) {
+    public Task<IActionResult> AdjustItemQty(Guid orderId, Guid itemId, [FromBody] OrderedItemQtyAdjustment itemAdjustment) {
         _logger.LogInformation("Adjusting item order qty {orderId}", orderId);
-        return _sender.Send(new AdjustItemQty.Command(orderId, itemAdjustment));
+        return _sender.Send(new AdjustItemQty.Command(orderId, itemId, itemAdjustment));
     }
 
 }

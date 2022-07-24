@@ -1,17 +1,17 @@
 ﻿using Dapper;
 using ExampleAPI.Common;
-using ExampleAPI.Orders.Data;
 using ExampleAPI.Orders.DTO;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace ExampleAPI.Orders.Queries;
 
 public class GetAll {
 
-    public record Query() : IRequest<IEnumerable<OrderDTO>>;
+    public record Query() : IRequest<IActionResult>;
 
-    public class Handler : IRequestHandler<Query, IEnumerable<OrderDTO>> {
+    public class Handler : IRequestHandler<Query, IActionResult> {
 
         private readonly IDbConnection _connection;
 
@@ -19,7 +19,7 @@ public class GetAll {
             _connection = factory.CreateConnection();
         }
 
-        public async Task<IEnumerable<OrderDTO>> Handle(Query request, CancellationToken cancellationToken) {
+        public async Task<IActionResult> Handle(Query request, CancellationToken cancellationToken) {
 
             const string query = "SELECT id, name FROM orders;";
             var orders = await _connection.QueryAsync<OrderDTO>(query);
@@ -29,7 +29,7 @@ public class GetAll {
                 order.Items = items;
             }
 
-            return orders;
+            return new OkObjectResult(orders);
 
         }
         

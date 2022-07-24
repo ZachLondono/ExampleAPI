@@ -26,7 +26,7 @@ public class Create {
 
             await _repository.Add(company);
 
-            var dto = new CompanyDTO() {
+            var companyDto = new CompanyDTO() {
                 Id = company.Id,
                 Name = company.Name,
                 Address = new() {
@@ -38,7 +38,7 @@ public class Create {
                 }
             };
 
-            return new OkObjectResult(dto);
+            return new CreatedResult($"/companies/{companyDto.Id}", companyDto);
 
         }
     }

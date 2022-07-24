@@ -26,7 +26,7 @@ public class AddItem {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
-            order.AddItem(request.NewItem.Name, request.NewItem.Qty);
+            var newItem = order.AddItem(request.NewItem.Name, request.NewItem.Qty);
 
             await _repository.Save(order);
 
@@ -45,7 +45,7 @@ public class AddItem {
                 Items = itemDTOs
             };
 
-            return new OkObjectResult(orderDto);
+            return new CreatedResult($"/orders/{orderDto.Id}/items/{newItem.Id}", orderDto);
 
         }
     }
