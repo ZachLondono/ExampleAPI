@@ -24,10 +24,10 @@ All queries to a specific resource will include the aggregate version in the ETa
 
 ## Repository
 
-## Workflows
+### Workflows
 
-### Test
+#### Test
 When any pull request is created a GitHub action is run which will build the project and run tests.
 
-### Deploy
+#### Deploy
 When changes are pushed to the `master` branch a Github action is run which will ubild the project, run tests, copy the project to the production server, rebuild the docker container and deploy the updated image.
