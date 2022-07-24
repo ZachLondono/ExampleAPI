@@ -18,6 +18,10 @@ Entitiy properties are exposed in a protected fashion, with only getters and rea
 
 Domain Events are readonly records of actions which took place within the system. Domain Events are published when any action executed which changes the state of an entity.
 
+### Optimistic Concurrency
+
+All queries to a specific resource will include the aggregate version in the ETag header. When a POST or PUT request is recieved, and the ETag header is set in the request, if the header value does not match the current entity version then the server will respond with a 412 status code.
+
 ## Repository
 
 ## Workflows
