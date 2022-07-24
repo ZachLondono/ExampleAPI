@@ -7,7 +7,7 @@ public abstract class Entity {
     
     public Guid Id { get; init; }
 
-    public int Version { get; init; }
+    public int Version { get; private set; }
 
     protected List<DomainEvent> _events = new();
 
@@ -23,10 +23,19 @@ public abstract class Entity {
 
     protected void AddEvent(DomainEvent domainEvent) => _events.Add(domainEvent);
 
-    public async Task PublishEvents(IPublisher publisher) {
+    public async Task<int> PublishEvents(IPublisher publisher) {
+        int publishedCount = 0;
         foreach (DomainEvent domainEvent in _events) {
-            await domainEvent.Publish(publisher);
+            if (await domainEvent.Publish(publisher)) { 
+                publishedCount++;
+                Version++;
+            }
         }
+        return publishedCount;
+    }
+
+    public void IncrementVersion(int count) {
+        Version += count;
     }
 
 }
