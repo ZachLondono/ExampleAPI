@@ -19,14 +19,16 @@ public class Create {
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
-            
-            var order = await _repository.Create();
-            order.SetName(request.NewOrder.Name);
-            foreach (var item in request.NewOrder.NewItems) {
-                order.AddItem(item.Name, item.Qty);
+
+            var order = Order.Create(request.NewOrder.Name);
+
+            if (request.NewOrder.NewItems.Any()) {
+                foreach (var item in request.NewOrder.NewItems) {
+                    order.AddItem(item.Name, item.Qty);
+                }
             }
 
-            await _repository.Save(order);
+            await _repository.Add(order);
 
             var itemDTOs = new List<OrderedItemDTO>();
 

@@ -2,15 +2,29 @@
 
 public interface IRepository<T> where T : Entity {
 
-    // TODO: Possible improvment; The create method takes T as a parameter, the method itself will deal only with 'inserting' the data into the datastore while the entity itself is responsible for initilizing itself into a valid 'default' state
-    Task<T> Create();
+    /// <summary>
+    /// Add an entity to the repository
+    /// </summary>
+    Task Add(T entity);
 
+    /// <summary>
+    /// Get a specific entity, given its id
+    /// </summary>
     Task<T?> Get(Guid id);
 
+    /// <summary>
+    /// Save the updated entity to the repository
+    /// </summary>
     Task Save(T entity);
 
+    /// <summary>
+    /// Remove the entity from the repository
+    /// </summary>
     Task Remove(T entity);
 
+    /// <summary>
+    /// Get all of the entities in the repository
+    /// </summary>
     Task<IEnumerable<T>> GetAll();
 
 }

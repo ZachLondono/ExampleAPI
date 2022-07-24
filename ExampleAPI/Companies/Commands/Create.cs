@@ -20,14 +20,11 @@ public class Create {
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
-            var company = await _repository.Create();
-            company.SetName(request.NewCompany.Name);
-            if (request.NewCompany.Address is not null && request.NewCompany.Address is not { Line1: "", Line2: "", City: "", State: "", Zip: "" }) {
-                var addr = request.NewCompany.Address;
-                company.SetAddress(new(addr.Line1, addr.Line2, addr.City, addr.State, addr.Zip));
-            }
+            var name = request.NewCompany.Name;
+            var addr = request.NewCompany.Address;
+            var company = Company.Create(name, new(addr.Line1, addr.Line2, addr.City, addr.State, addr.Zip));
 
-            await _repository.Save(company);
+            await _repository.Add(company);
 
             var dto = new CompanyDTO() {
                 Id = company.Id,

@@ -16,6 +16,12 @@ public class OrderedItem : Entity {
         Name = name;
     }
 
+    private OrderedItem(Guid orderId, string name, int qty) : this(Guid.NewGuid(), orderId, name, qty) { 
+        // Could optionally add a 'OrderedItemCreated' event here
+    }
+
+    public static OrderedItem Create(Guid orderId, string name, int qty) => new(orderId, name, qty);
+
     public void AdjustQty(int newQty) {
         AddEvent(new Events.ItemQtyAdjustedEvent(OrderId, Id, newQty));
         Qty = newQty;

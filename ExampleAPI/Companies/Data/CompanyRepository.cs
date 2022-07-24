@@ -16,19 +16,13 @@ public class CompanyRepository : IRepository<Company> {
         _publisher = publisher;
     }
 
-    public async Task<Company> Create() {
+    public async Task Add(Company entity) {
 
         const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
-        const string defaultName = "New Company";
+        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name});
 
-        Guid newId = Guid.NewGuid();
-
-        await _connection.ExecuteAsync(query, new { Id = newId, Name = defaultName });
-
-        await _publisher.Publish(new Events.CompanyCreatedEvent(newId, defaultName));
-
-        return new(newId, defaultName, new());
+        await entity.PublishEvents(_publisher);
 
     }
 

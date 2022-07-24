@@ -16,18 +16,23 @@ public class OrderRepository :  IRepository<Order> {
         _publisher = publisher;
     }
 
-    public async Task<Order> Create() {
+    public async Task Add(Order entity) {
 
         const string command = "INSERT INTO orders (id, name) values (@Id, @Name);";
 
-        const string defaultName = "New Order";
-        Guid newId = Guid.NewGuid();
+        _connection.Open();
+        var trx = _connection.BeginTransaction();
 
-        await _connection.ExecuteAsync(command, new { Id = newId, Name = defaultName });
+        await _connection.ExecuteAsync(command, new { entity.Id, entity.Name }, trx);
+        foreach (var item in entity.Items) {
+            await InsertItem(entity, item.Id, item.Name, item.Qty, trx);
+        }
 
-        await _publisher.Publish(new Events.OrderCreatedEvent(newId, defaultName));
+        trx.Commit();
+        _connection.Close();
 
-        return new(newId, defaultName, Enumerable.Empty<OrderedItem>());
+        await entity.PublishEvents(_publisher);
+
 
     }
 
@@ -62,7 +67,6 @@ public class OrderRepository :  IRepository<Order> {
         }
 
         return orders;
-
     }
 
     private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction? transaction = null) {
@@ -101,14 +105,8 @@ public class OrderRepository :  IRepository<Order> {
                 }, trx);
 
             } else if (domainEvent is Events.ItemAddedEvent itemAdded) {
-
-                const string command = "INSERT INTO ordereditems (id, name, qty, orderid) VALUES (@Id, @Name, @Qty, @OrderId);";
-                await _connection.ExecuteAsync(command, new {
-                    Id = itemAdded.ItemId,
-                    itemAdded.Name,
-                    itemAdded.Qty,
-                    OrderId = entity.Id
-                }, trx);
+                
+                await InsertItem(entity, itemAdded.ItemId, itemAdded.Name, itemAdded.Qty, trx);
 
             } else if (domainEvent is Events.ItemRemovedEvent itemRemoved) {
 
@@ -122,9 +120,7 @@ public class OrderRepository :  IRepository<Order> {
         }
 
         foreach (var item in entity.Items) {
-
-            await SaveItem(entity, item, _connection, trx);
-
+            await SaveItem(item, _connection, trx);
         }
 
         trx.Commit();
@@ -138,8 +134,18 @@ public class OrderRepository :  IRepository<Order> {
         }
 
     }
-    
-    private static async Task SaveItem(Order order, OrderedItem entity, IDbConnection connection, IDbTransaction trx) {
+
+    private async Task InsertItem(Order entity, Guid itemId, string itemName, int itemQty, IDbTransaction trx) {
+        const string command = "INSERT INTO ordereditems (id, name, qty, orderid) VALUES (@Id, @Name, @Qty, @OrderId);";
+        await _connection.ExecuteAsync(command, new {
+            Id = itemId,
+            Name = itemName,
+            Qty = itemQty,
+            OrderId = entity.Id
+        }, trx);
+    }
+
+    private static async Task SaveItem(OrderedItem entity, IDbConnection connection, IDbTransaction trx) {
         
         foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 
