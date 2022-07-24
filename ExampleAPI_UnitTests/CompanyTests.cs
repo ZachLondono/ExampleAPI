@@ -8,6 +8,28 @@ namespace ExampleAPI_UnitTests;
 public class CompanyTests {
 
     [Fact]
+    public void Should_CreateNewOrderedItem() {
+
+        // Arrange
+        string newname = "New Name";
+        Address address = new() {
+            Line1 = "A",
+            Line2 = "A",
+            City = "A",
+            State = "A",
+            Zip = "A",
+        };
+
+        // Act
+        var company = Company.Create(newname, address);
+
+        // Assert
+        company.Name.Should().Be(newname);
+        company.Address.Should().Be(address);
+
+    }
+
+    [Fact]
     public void Should_SetCompanyName() {
 
         // Arrange 

@@ -1,4 +1,5 @@
 using ExampleAPI.Orders.Domain;
+using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,20 @@ using Xunit;
 
 namespace ExampleAPI_UnitTests;
 public class OrderTests {
+
+    [Fact]
+    public void Should_CreateNewOrder() {
+
+        // Arrange
+        string newname = "New Name";
+
+        // Act
+        var order = Order.Create(newname);
+
+        // Assert
+        order.Name.Should().Be(newname);
+
+    }
 
     [Fact]
     public void Should_AddItemToOrder() {

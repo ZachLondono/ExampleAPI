@@ -295,13 +295,9 @@ public class OrderCommandTests {
     public async Task Create_Should_ReturnOrder_WhenCreatingOrderAsync() {
 
         // Arrange
-        Guid order_id = Guid.NewGuid();
         string expected_name = "Test Order";
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Create())
-            .ReturnsAsync(() => new(order_id, "", Enumerable.Empty<OrderedItem>()));
-
         var repo = mock.Object;
 
         var request = new Create.Command(new() { Name = expected_name, NewItems = Enumerable.Empty<NewOrderedItem>()});
@@ -317,9 +313,7 @@ public class OrderCommandTests {
 
         okResponse!.Value.Should().BeOfType<OrderDTO>();
         var order_response = okResponse.Value as OrderDTO;
-
-        order_response!.Id.Should().Be(order_id);
-        order_response.Name.Should().Be(expected_name);
+        order_response!.Name.Should().Be(expected_name);
 
     }
 

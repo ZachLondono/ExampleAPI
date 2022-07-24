@@ -18,7 +18,6 @@ public class CompanyCommandTests {
     public async Task Create_Should_ReturnCompanyAsync() {
 
         // Arrange
-        var expected_id = Guid.NewGuid();
         var expected_name = "New Company Name";
         var expected_addr = new AddressDTO() {
             Line1 = "A",
@@ -29,8 +28,6 @@ public class CompanyCommandTests {
         };
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Create())
-            .ReturnsAsync(() => new(expected_id, "", new()));
         var repo = mock.Object;
 
         var request = new Create.Command(new() {
@@ -52,7 +49,6 @@ public class CompanyCommandTests {
         
         var company = result.Value as CompanyDTO;
 
-        company!.Id.Should().Be(expected_id);
         company.Name.Should().Be(expected_name);
         company.Address.Should().Be(expected_addr);
 
