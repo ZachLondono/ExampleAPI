@@ -39,7 +39,11 @@ public class Get {
                 return new NotFoundObjectResult($"Company with id {request.CompanyId} not found");
             }
 
-            request.Context.Response.Headers.ETag = company.Version.ToString();
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(company);
 

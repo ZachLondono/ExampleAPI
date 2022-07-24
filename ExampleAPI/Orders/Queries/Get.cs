@@ -32,7 +32,11 @@ public class Get {
             const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
             order.Items = await _connection.QueryAsync<OrderedItemDTO>(itemQuery, request);
 
-            request.Context.Response.Headers.ETag = order.Version.ToString();
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(order);
 

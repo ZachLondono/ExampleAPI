@@ -39,7 +39,11 @@ public class Create {
                 }
             };
 
-            request.Context.Response.Headers.ETag = company.Version.ToString();
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new CreatedResult($"/companies/{companyDto.Id}", companyDto);
 

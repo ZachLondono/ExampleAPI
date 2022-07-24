@@ -25,19 +25,23 @@ public class SetName {
                 return new NotFoundResult();
             }
 
-            var etag = request.Context.Request.Headers.ETag;
-            if (etag.Count > 0) {
+            try {
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
 
-                try {
-                    var version = int.Parse(etag.ToString());
+                    try {
+                        var version = int.Parse(etag.ToString());
 
-                    if (version != order.Version)
-                        return new StatusCodeResult(412);
+                        if (version != order.Version)
+                            return new StatusCodeResult(412);
 
-                } catch (FormatException) {
-                    // Log invalid etag
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
                 }
-
+            } catch {
+                // log that header could not be read
             }
 
             order.SetName(request.NewName.Name);
@@ -60,7 +64,11 @@ public class SetName {
                 Items = itemDTOs
             };
 
-            request.Context.Response.Headers.ETag = order.Version.ToString();
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(orderDto);
         }

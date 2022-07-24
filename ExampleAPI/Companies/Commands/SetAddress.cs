@@ -26,19 +26,23 @@ public class SetAddress {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
             }
 
-            var etag = request.Context.Request.Headers.ETag;
-            if (etag.Count > 0) {
+            try { 
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
 
-                try {
-                    var version = int.Parse(etag.ToString());
+                    try {
+                        var version = int.Parse(etag.ToString());
 
-                    if (version != company.Version)
-                        return new StatusCodeResult(412);
+                        if (version != company.Version)
+                            return new StatusCodeResult(412);
 
-                } catch (FormatException) {
-                    // Log invalid etag
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
                 }
-
+            } catch {
+                // log that header could not be read
             }
 
             company.SetAddress(new Address(request.NewAddress.Line1,
@@ -61,7 +65,11 @@ public class SetAddress {
 
             }
 
-            request.Context.Response.Headers.ETag = company.Version.ToString();
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(new CompanyDTO() {
                 Id = company.Id,
