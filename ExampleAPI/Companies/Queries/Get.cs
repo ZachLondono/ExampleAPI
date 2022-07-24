@@ -24,7 +24,7 @@ public class Get {
 
             const string query = "SELECT companies.id, name, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1), line1, line2, city, state, zip FROM companies WHERE companies.id = @CompanyId;";
 
-            var companies = await connection.QueryAsync<CompanyDTO, AddressDTO?, CompanyDTO>(query,
+            var companies = await connection.QueryAsync<CompanyDTO, AddressDTO, CompanyDTO>(query,
                 param: new { request.CompanyId },
                 map: (c, a) => {
                     c.Address = a;
