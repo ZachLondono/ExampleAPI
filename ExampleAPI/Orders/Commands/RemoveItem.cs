@@ -27,14 +27,13 @@ public class RemoveItem {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
-            try { 
-                var etag = request.Context.Request.Headers.ETag;
-                if (etag.Count > 0) {
+            try {
+                var ifMatch = request.Context.Request.Headers.IfMatch;
+                if (ifMatch.Count > 0) {
 
                     try {
-                        var version = int.Parse(etag.ToString());
 
-                        if (version != order.Version)
+                        if (!ifMatch.Contains(order.Version.ToString()))
                             return new StatusCodeResult(412);
 
                     } catch (FormatException) {

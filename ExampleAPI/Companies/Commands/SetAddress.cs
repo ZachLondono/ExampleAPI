@@ -26,14 +26,13 @@ public class SetAddress {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
             }
 
-            try { 
-                var etag = request.Context.Request.Headers.ETag;
-                if (etag.Count > 0) {
+            try {
+                var ifMatch = request.Context.Request.Headers.IfMatch;
+                if (ifMatch.Count > 0) {
 
                     try {
-                        var version = int.Parse(etag.ToString());
 
-                        if (version != company.Version)
+                        if (!ifMatch.Contains(company.Version.ToString()))
                             return new StatusCodeResult(412);
 
                     } catch (FormatException) {
