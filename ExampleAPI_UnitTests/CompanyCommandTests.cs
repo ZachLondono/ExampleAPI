@@ -41,15 +41,15 @@ public class CompanyCommandTests {
         var response = await handler.Handle(request, token);
 
         // Assert
-        response.Should().BeOfType<OkObjectResult>();
+        response.Should().BeOfType<CreatedResult>();
         
-        var result = response as OkObjectResult;
+        var result = response as CreatedResult;
         result.Should().NotBeNull();
         result!.Value.Should().BeOfType<CompanyDTO>();
         
         var company = result.Value as CompanyDTO;
 
-        company.Name.Should().Be(expected_name);
+        company!.Name.Should().Be(expected_name);
         company.Address.Should().Be(expected_addr);
 
     }
@@ -167,7 +167,7 @@ public class CompanyCommandTests {
     public async Task SetName_Should_ReturnCompanyAsync() {
         // Arrange
         var order_id = Guid.NewGuid();
-        var new_name = "New Name";
+        var new_name = new NewCompanyName() { Name = "New Name" };
 
         var mock = new Mock<IRepository<Company>>();
         mock.Setup(x => x.Get(order_id))
@@ -191,7 +191,7 @@ public class CompanyCommandTests {
         var company = result.Value as CompanyDTO;
 
         company!.Id.Should().Be(order_id);
-        company.Name.Should().Be(new_name);
+        company.Name.Should().Be(new_name.Name);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class CompanyCommandTests {
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
-        var request = new SetName.Command(order_id, "");
+        var request = new SetName.Command(order_id, new() { Name = "" });
         var handler = new SetName.Handler(repo);
         var token = new CancellationTokenSource().Token;
 

@@ -45,9 +45,9 @@ public class OrderCommandTests {
 
         // Assert
 
-        response.Should().BeOfType<OkObjectResult>();
+        response.Should().BeOfType<CreatedResult>();
 
-        var okResponse = response as OkObjectResult;
+        var okResponse = response as CreatedResult;
         okResponse.Should().NotBeNull();
 
         okResponse!.Value.Should().BeOfType<OrderDTO>();
@@ -105,7 +105,7 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(order_id, new() { Id = item_id, NewQty = new_qty });
+        var request = new AdjustItemQty.Command(order_id, item_id, new() { NewQty = new_qty });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -136,7 +136,7 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(id, new());
+        var request = new AdjustItemQty.Command(id, Guid.NewGuid(), new() { NewQty = 10 });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -164,7 +164,7 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(order_id, new());
+        var request = new AdjustItemQty.Command(order_id, item_id, new() { NewQty = 10 });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -185,8 +185,8 @@ public class OrderCommandTests {
         // Arrange
         Guid order_id = Guid.NewGuid();
 
-        string original_name = "Original name";
-        string new_name = "New_name";
+        var original_name = "Original name";
+        var new_name = new NewOrderName() { Name = "New_name" };
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
@@ -209,7 +209,7 @@ public class OrderCommandTests {
         var order_response = okResponse.Value as OrderDTO;
 
         order_response!.Id.Should().Be(order_id);
-        order_response.Name.Should().Be(new_name);
+        order_response.Name.Should().Be(new_name.Name);
 
     }
 
@@ -219,7 +219,7 @@ public class OrderCommandTests {
         // Arrange
         Guid order_id = Guid.NewGuid();
 
-        string new_name = "New_name";
+        var new_name = new NewOrderName() { Name = "New_name" };
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
@@ -308,8 +308,8 @@ public class OrderCommandTests {
         IActionResult response = await handler.Handle(request, token);
 
         // Assert
-        response.Should().BeOfType<OkObjectResult>();
-        var okResponse = response as OkObjectResult;
+        response.Should().BeOfType<CreatedResult>();
+        var okResponse = response as CreatedResult;
 
         okResponse!.Value.Should().BeOfType<OrderDTO>();
         var order_response = okResponse.Value as OrderDTO;
