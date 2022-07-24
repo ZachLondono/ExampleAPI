@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class SetName {
 
-    public record Command(Guid CompanyId, NewCompanyName NewName) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid CompanyId, NewCompanyName NewName) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
         

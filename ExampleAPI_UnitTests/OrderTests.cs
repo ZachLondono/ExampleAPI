@@ -26,7 +26,7 @@ public class OrderTests {
     public void Should_AddItemToOrder() {
 
         // Arrange
-        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), 0, "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act 
         var item = order.AddItem("New Item", 5);
@@ -40,7 +40,7 @@ public class OrderTests {
     public void Should_CreateEvent_WhenAddingItem() {
 
         // Arrange
-        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), 0, "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act 
         var item = order.AddItem("New Item", 5);
@@ -61,9 +61,9 @@ public class OrderTests {
 
         // Arrange
         var order_id = Guid.NewGuid();
-        var item = new OrderedItem(Guid.NewGuid(), order_id, "New Item", 5);
+        var item = new OrderedItem(Guid.NewGuid(), 0, order_id, "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(order_id, "Test Order", items);
+        var order = new Order(order_id, 0, "Test Order", items);
 
         // Act 
         order.RemoveItem(item);
@@ -78,9 +78,9 @@ public class OrderTests {
 
         // Arrange
         var order_id = Guid.NewGuid();
-        var item = new OrderedItem(Guid.NewGuid(), order_id, "New Item", 5);
+        var item = new OrderedItem(Guid.NewGuid(), 0, order_id, "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(order_id, "Test Order", items);
+        var order = new Order(order_id, 0, "Test Order", items);
 
         // Act 
         order.RemoveItem(item);
@@ -100,7 +100,7 @@ public class OrderTests {
     public void Should_ChangeName() {
 
         // Arrange
-        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), 0, "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act
         string newName = "Changed Name";
@@ -115,7 +115,7 @@ public class OrderTests {
     public void Should_CreateEvent_WhenChangingName() {
 
         // Arrange
-        var order = new Order(Guid.NewGuid(), "Test Order", Enumerable.Empty<OrderedItem>());
+        var order = new Order(Guid.NewGuid(), 0, "Test Order", Enumerable.Empty<OrderedItem>());
 
         // Act
         string newName = "Changed Name";

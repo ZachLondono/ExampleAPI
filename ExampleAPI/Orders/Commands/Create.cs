@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class Create {
 
-    public record Command(NewOrder NewOrder) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, NewOrder NewOrder) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

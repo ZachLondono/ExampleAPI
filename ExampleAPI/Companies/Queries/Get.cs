@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Queries;
 
 public class Get {
 
-    public record Query(Guid CompanyId) : IRequest<IActionResult>;
+    public record Query(HttpContext Context, Guid CompanyId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 

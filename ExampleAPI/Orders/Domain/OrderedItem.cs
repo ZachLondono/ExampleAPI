@@ -10,13 +10,13 @@ public class OrderedItem : Entity {
 
     public string Name { get; init; }
 
-    public OrderedItem(Guid id, Guid orderId, string name, int qty) : base(id) {
+    public OrderedItem(Guid id, int version, Guid orderId, string name, int qty) : base(id, version) {
         OrderId = orderId;
         Qty = qty;
         Name = name;
     }
 
-    private OrderedItem(Guid orderId, string name, int qty) : this(Guid.NewGuid(), orderId, name, qty) { 
+    private OrderedItem(Guid orderId, string name, int qty) : this(Guid.NewGuid(), 0, orderId, name, qty) { 
         // Could optionally add a 'OrderedItemCreated' event here
     }
 

@@ -7,7 +7,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class RemoveItem {
 
-    public record Command(Guid OrderId, Guid ItemId) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid OrderId, Guid ItemId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

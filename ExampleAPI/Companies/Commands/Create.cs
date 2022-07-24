@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class Create {
 
-    public record Command(NewCompany NewCompany) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, NewCompany NewCompany) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

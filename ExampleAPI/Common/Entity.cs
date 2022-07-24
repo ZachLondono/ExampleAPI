@@ -7,12 +7,17 @@ public abstract class Entity {
     
     public Guid Id { get; init; }
 
+    public int Version { get; init; }
+
     protected List<DomainEvent> _events = new();
 
     [JsonIgnore]
     public IEnumerable<DomainEvent> Events => _events;
 
-    public Entity(Guid id) => Id = id;
+    public Entity(Guid id, int version) {
+        Id = id;
+        Version = version;
+    }
 
     public void ClearEvents() => _events.Clear();
 

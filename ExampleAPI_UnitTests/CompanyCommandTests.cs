@@ -3,6 +3,7 @@ using ExampleAPI.Companies.Commands;
 using ExampleAPI.Companies.Domain;
 using ExampleAPI.Companies.DTO;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System;
@@ -30,7 +31,10 @@ public class CompanyCommandTests {
         var mock = new Mock<IRepository<Company>>();
         var repo = mock.Object;
 
-        var request = new Create.Command(new() {
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Create.Command(context, new() {
             Name = expected_name,
             Address = expected_addr
         });
@@ -61,10 +65,13 @@ public class CompanyCommandTests {
 
         var mock = new Mock<IRepository<Company>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "", new()));
+            .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
-        var request = new Delete.Command(order_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Delete.Command(context, order_id);
         var handler = new Delete.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -88,7 +95,10 @@ public class CompanyCommandTests {
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
-        var request = new Delete.Command(order_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Delete.Command(context, order_id);
         var handler = new Delete.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -116,10 +126,13 @@ public class CompanyCommandTests {
 
         var mock = new Mock<IRepository<Company>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "", new()));
+            .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
-        var request = new SetAddress.Command(order_id, expected_addr);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetAddress.Command(context, order_id, expected_addr);
         var handler = new SetAddress.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -149,7 +162,10 @@ public class CompanyCommandTests {
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
-        var request = new SetAddress.Command(order_id, new());
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetAddress.Command(context, order_id, new());
         var handler = new SetAddress.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -171,10 +187,13 @@ public class CompanyCommandTests {
 
         var mock = new Mock<IRepository<Company>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "", new()));
+            .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
-        var request = new SetName.Command(order_id, new_name);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetName.Command(context, order_id, new_name);
         var handler = new SetName.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -204,7 +223,10 @@ public class CompanyCommandTests {
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
-        var request = new SetName.Command(order_id, new() { Name = "" });
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetName.Command(context, order_id, new() { Name = "" });
         var handler = new SetName.Handler(repo);
         var token = new CancellationTokenSource().Token;
 

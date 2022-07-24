@@ -22,13 +22,13 @@ public class CompaniesController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CompanyDTO))]
     public Task<IActionResult> Create([FromBody] NewCompany newCompany) {
         _logger.LogInformation("Creating new company");
-        return _sender.Send(new Create.Command(newCompany));
+        return _sender.Send(new Create.Command(HttpContext, newCompany));
     }
 
     [HttpGet]
     public Task<IActionResult> GetAll() {
         _logger.LogInformation("Getting all companies");
-        return _sender.Send(new GetAll.Query());
+        return _sender.Send(new GetAll.Query(HttpContext));
     }
 
     [Route("{companyId}")]
@@ -37,7 +37,7 @@ public class CompaniesController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> Get(Guid companyId) {
         _logger.LogInformation("Getting company {companyId}", companyId);
-        return _sender.Send(new Get.Query(companyId));
+        return _sender.Send(new Get.Query(HttpContext, companyId));
     }
 
     [Route("{companyId}")]
@@ -46,7 +46,7 @@ public class CompaniesController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid companyId) {
         _logger.LogInformation("Deleting company {companyId}", companyId);
-        return await _sender.Send(new Delete.Command(companyId));
+        return await _sender.Send(new Delete.Command(HttpContext, companyId));
     }
     
     [Route("{companyId}/name")]
@@ -55,7 +55,7 @@ public class CompaniesController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> SetName(Guid companyId, [FromBody] NewCompanyName newName) {
         _logger.LogInformation("Updating company name {companyId}", companyId);
-        return _sender.Send(new SetName.Command(companyId, newName));
+        return _sender.Send(new SetName.Command(HttpContext, companyId, newName));
     }
 
     [Route("{companyId}/address")]
@@ -64,7 +64,7 @@ public class CompaniesController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> SetAddress(Guid companyId, [FromBody] AddressDTO newAddress) {
         _logger.LogInformation("Setting address for company {companyId}", companyId);
-        return _sender.Send(new SetAddress.Command(companyId, newAddress));
+        return _sender.Send(new SetAddress.Command(HttpContext, companyId, newAddress));
     }
 
 }

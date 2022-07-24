@@ -10,7 +10,7 @@ namespace ExampleAPI.Orders.Queries;
 
 public class Get {
 
-    public record Query(Guid OrderId) : IRequest<IActionResult>;
+    public record Query(HttpContext Context, Guid OrderId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 

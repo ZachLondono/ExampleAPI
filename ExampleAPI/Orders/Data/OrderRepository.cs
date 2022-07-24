@@ -47,7 +47,7 @@ public class OrderRepository :  IRepository<Order> {
 
         var items = await GetItemsFromOrderId(_connection, id);
 
-        var order =  new Order(orderData.Id, orderData.Name, items);
+        var order =  new Order(orderData.Id, 0, orderData.Name, items);
 
         return order;
     }
@@ -62,7 +62,7 @@ public class OrderRepository :  IRepository<Order> {
 
             var items = await GetItemsFromOrderId(_connection, orderData.Id);
 
-            orders.Add(new(orderData.Id, orderData.Name, items));
+            orders.Add(new(orderData.Id, 0, orderData.Name, items));
 
         }
 
@@ -76,7 +76,7 @@ public class OrderRepository :  IRepository<Order> {
 
         List<OrderedItem> items = new();
         foreach (var item in itemsData) {
-            items.Add(new(item.Id, orderId, item.Name, item.Qty));
+            items.Add(new(item.Id, 0, orderId, item.Name, item.Qty));
         }
 
         return items;

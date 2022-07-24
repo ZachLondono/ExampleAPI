@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class AddItem {
 
-    public record Command(Guid OrderId, NewOrderedItem NewItem) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid OrderId, NewOrderedItem NewItem) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 

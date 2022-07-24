@@ -9,7 +9,7 @@ namespace ExampleAPI.Orders.Queries;
 
 public class GetAll {
 
-    public record Query() : IRequest<IActionResult>;
+    public record Query(HttpContext Context) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 

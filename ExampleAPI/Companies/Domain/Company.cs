@@ -8,12 +8,12 @@ public class Company : Entity {
 
     public Address Address { get; private set; }
 
-    public Company(Guid id, string name, Address address) : base(id) {
+    public Company(Guid id, int version, string name, Address address) : base(id, version) {
         Name = name;
         Address = address;
     }
 
-    private Company(string name, Address address) : this(Guid.NewGuid(), name, address) {
+    private Company(string name, Address address) : this(Guid.NewGuid(), 0, name, address) {
         AddEvent(new Events.CompanyCreatedEvent(Id, name));
     }
 
