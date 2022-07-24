@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class SetName {
 
-    public record Command(Guid CompanyId, NewCompanyName NewName) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid CompanyId, NewCompanyName NewName) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
         
@@ -26,6 +26,25 @@ public class SetName {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
             }
 
+            try { 
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
+
+                    try {
+                        var version = int.Parse(etag.ToString());
+
+                        if (version != company.Version)
+                            return new StatusCodeResult(412);
+
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
+                }
+            } catch {
+                // log that header could not be read
+            }
+
             company.SetName(request.NewName.Name);
             await _repository.Save(company);
 
@@ -41,8 +60,15 @@ public class SetName {
 
             }
 
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
+
             return new OkObjectResult(new CompanyDTO() {
                 Id = company.Id,
+                Version = company.Version,
                 Name = company.Name,
                 Address = addrDto
             });

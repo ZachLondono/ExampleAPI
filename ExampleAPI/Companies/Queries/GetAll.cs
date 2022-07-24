@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Queries;
 
 public class GetAll {
 
-    public record Query() : IRequest<IActionResult>;
+    public record Query(HttpContext Context) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 
@@ -22,7 +22,7 @@ public class GetAll {
 
             var connection = _factory.CreateConnection();
 
-            const string query = "SELECT id, name, line1, line2, city, state, zip FROM companies;";
+            const string query = "SELECT companies.id, name, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1), line1, line2, city, state, zip FROM companies;";
 
             var companies = await connection.QueryAsync<CompanyDTO, AddressDTO, CompanyDTO>(query,
                 map: (c, a) => {

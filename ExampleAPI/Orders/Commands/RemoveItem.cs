@@ -7,7 +7,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class RemoveItem {
 
-    public record Command(Guid OrderId, Guid ItemId) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid OrderId, Guid ItemId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -27,6 +27,25 @@ public class RemoveItem {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
+            try { 
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
+
+                    try {
+                        var version = int.Parse(etag.ToString());
+
+                        if (version != order.Version)
+                            return new StatusCodeResult(412);
+
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
+                }
+            } catch {
+                // log that header could not be read
+            }
+
             var item = order.Items.FirstOrDefault(i => i.Id == request.ItemId);
 
             if (item is null) {
@@ -36,6 +55,12 @@ public class RemoveItem {
             order.RemoveItem(item);
 
             await _repository.Save(order);
+
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new NoContentResult();
 

@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class Create {
 
-    public record Command(NewCompany NewCompany) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, NewCompany NewCompany) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -28,6 +28,7 @@ public class Create {
 
             var companyDto = new CompanyDTO() {
                 Id = company.Id,
+                Version = company.Version,
                 Name = company.Name,
                 Address = new() {
                     Line1 = company.Address.Line1,
@@ -37,6 +38,12 @@ public class Create {
                     Zip = company.Address.Zip
                 }
             };
+
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new CreatedResult($"/companies/{companyDto.Id}", companyDto);
 

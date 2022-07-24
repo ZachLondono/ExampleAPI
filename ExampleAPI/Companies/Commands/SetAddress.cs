@@ -8,7 +8,7 @@ namespace ExampleAPI.Companies.Commands;
 
 public class SetAddress {
 
-    public record Command(Guid CompanyId, AddressDTO NewAddress) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid CompanyId, AddressDTO NewAddress) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -24,6 +24,25 @@ public class SetAddress {
 
             if (company is null) {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
+            }
+
+            try { 
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
+
+                    try {
+                        var version = int.Parse(etag.ToString());
+
+                        if (version != company.Version)
+                            return new StatusCodeResult(412);
+
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
+                }
+            } catch {
+                // log that header could not be read
             }
 
             company.SetAddress(new Address(request.NewAddress.Line1,
@@ -46,8 +65,15 @@ public class SetAddress {
 
             }
 
+            try { 
+                request.Context.Response.Headers.ETag = company.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
+
             return new OkObjectResult(new CompanyDTO() {
                 Id = company.Id,
+                Version = company.Version,
                 Name = company.Name,
                 Address = addrDto
             });

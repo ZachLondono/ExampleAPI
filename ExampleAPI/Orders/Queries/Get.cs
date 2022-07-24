@@ -10,7 +10,7 @@ namespace ExampleAPI.Orders.Queries;
 
 public class Get {
 
-    public record Query(Guid OrderId) : IRequest<IActionResult>;
+    public record Query(HttpContext Context, Guid OrderId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 
@@ -22,7 +22,7 @@ public class Get {
 
         public async Task<IActionResult> Handle(Query request, CancellationToken cancellationToken) {
 
-            const string query = "SELECT id, name FROM orders WHERE id = @OrderId;";
+            const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders WHERE orders.id = @OrderId;";
             OrderDTO? order = await _connection.QuerySingleOrDefaultAsync<OrderDTO>(query, request);
 
             if (order is null) {
@@ -31,6 +31,12 @@ public class Get {
 
             const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
             order.Items = await _connection.QueryAsync<OrderedItemDTO>(itemQuery, request);
+
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(order);
 

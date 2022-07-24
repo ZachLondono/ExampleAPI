@@ -20,10 +20,11 @@ public abstract record DomainEvent : INotification {
     [JsonIgnore]
     public bool IsPublished { get; private set; } = false;
 
-    public async Task Publish(IPublisher publisher) {
-        if (IsPublished) return;
+    public async Task<bool> Publish(IPublisher publisher) {
+        if (IsPublished) return false;
         await publisher.Publish(this);
         IsPublished = true;
+        return true;
     }
 
     /// <param name="aggregateId">The id of the aggregate to which this event occcured</param>

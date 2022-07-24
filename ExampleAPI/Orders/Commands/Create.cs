@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class Create {
 
-    public record Command(NewOrder NewOrder) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, NewOrder NewOrder) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -42,10 +42,17 @@ public class Create {
 
             var newOrder = new OrderDTO() {
                 Id = order.Id,
+                Version = order.Version,
                 Name = order.Name,
                 Items = itemDTOs
             };
-            
+
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
+
             return new CreatedResult($"/orders/{newOrder.Id}", newOrder);
 
         }

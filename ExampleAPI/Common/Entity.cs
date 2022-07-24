@@ -7,21 +7,35 @@ public abstract class Entity {
     
     public Guid Id { get; init; }
 
+    public int Version { get; private set; }
+
     protected List<DomainEvent> _events = new();
 
     [JsonIgnore]
     public IEnumerable<DomainEvent> Events => _events;
 
-    public Entity(Guid id) => Id = id;
+    public Entity(Guid id, int version) {
+        Id = id;
+        Version = version;
+    }
 
     public void ClearEvents() => _events.Clear();
 
     protected void AddEvent(DomainEvent domainEvent) => _events.Add(domainEvent);
 
-    public async Task PublishEvents(IPublisher publisher) {
+    public async Task<int> PublishEvents(IPublisher publisher) {
+        int publishedCount = 0;
         foreach (DomainEvent domainEvent in _events) {
-            await domainEvent.Publish(publisher);
+            if (await domainEvent.Publish(publisher)) { 
+                publishedCount++;
+                Version++;
+            }
         }
+        return publishedCount;
+    }
+
+    public void IncrementVersion(int count) {
+        Version += count;
     }
 
 }

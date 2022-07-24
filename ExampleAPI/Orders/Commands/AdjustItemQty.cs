@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class AdjustItemQty {
 
-    public record Command(Guid OrderId, Guid ItemId, OrderedItemQtyAdjustment ItemAdjustment) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid OrderId, Guid ItemId, OrderedItemQtyAdjustment ItemAdjustment) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -23,6 +23,25 @@ public class AdjustItemQty {
 
             if (order is null) {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
+            }
+
+            try {
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
+
+                    try {
+                        var version = int.Parse(etag.ToString());
+
+                        if (version != order.Version)
+                            return new StatusCodeResult(412);
+
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
+                }
+            } catch {
+                // log that header could not be read
             }
 
             OrderedItem? item = order.Items.SingleOrDefault(i => i.Id == request.ItemId);
@@ -43,6 +62,12 @@ public class AdjustItemQty {
                 Name = item.Name,
                 Qty = item.Qty
             };
+
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(itemDto);
         }

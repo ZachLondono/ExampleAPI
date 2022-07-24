@@ -8,7 +8,7 @@ namespace ExampleAPI.Orders.Commands;
 
 public class SetName {
 
-    public record Command(Guid OrderId, NewOrderName NewName) : IRequest<IActionResult>;
+    public record Command(HttpContext Context, Guid OrderId, NewOrderName NewName) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
@@ -23,6 +23,25 @@ public class SetName {
 
             if (order is null) {
                 return new NotFoundResult();
+            }
+
+            try {
+                var etag = request.Context.Request.Headers.ETag;
+                if (etag.Count > 0) {
+
+                    try {
+                        var version = int.Parse(etag.ToString());
+
+                        if (version != order.Version)
+                            return new StatusCodeResult(412);
+
+                    } catch (FormatException) {
+                        // Log invalid etag
+                    }
+
+                }
+            } catch {
+                // log that header could not be read
             }
 
             order.SetName(request.NewName.Name);
@@ -40,9 +59,16 @@ public class SetName {
 
             var orderDto = new OrderDTO() {
                 Id = order.Id,
+                Version = order.Version,
                 Name = order.Name,
                 Items = itemDTOs
             };
+
+            try { 
+                request.Context.Response.Headers.ETag = order.Version.ToString();
+            } catch {
+                // log that header could not be set
+            }
 
             return new OkObjectResult(orderDto);
         }

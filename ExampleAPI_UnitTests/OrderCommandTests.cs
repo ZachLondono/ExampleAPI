@@ -3,6 +3,7 @@ using ExampleAPI.Orders.Commands;
 using ExampleAPI.Orders.Domain;
 using ExampleAPI.Orders.DTO;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System;
@@ -22,7 +23,7 @@ public class OrderCommandTests {
         // Arrange
         var expected_id = Guid.NewGuid();
         var expected_name = "Order Name";
-        var expected_order = new Order(expected_id, expected_name, Enumerable.Empty<OrderedItem>());
+        var expected_order = new Order(expected_id, 0, expected_name, Enumerable.Empty<OrderedItem>());
         var expected_item_name = "Item Name";
         var expected_qty = 5;
         var to_add = new NewOrderedItem() {
@@ -36,7 +37,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AddItem.Command(expected_id, to_add);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new AddItem.Command(context, expected_id, to_add);
         var handler = new AddItem.Handler(repo);
         var token = new CancellationTokenSource().Token;
         
@@ -72,7 +76,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AddItem.Command(id, new());
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new AddItem.Command(context, id, new());
         var handler = new AddItem.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -99,13 +106,16 @@ public class OrderCommandTests {
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "Example Order", new List<OrderedItem>() {
-                new(item_id,order_id, "Example Item", original_qty)
+            .ReturnsAsync(() => new(order_id, 0,"Example Order", new List<OrderedItem>() {
+                new(item_id, 0, order_id, "Example Item", original_qty)
             }));
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(order_id, item_id, new() { NewQty = new_qty });
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new AdjustItemQty.Command(context, order_id, item_id, new() { NewQty = new_qty });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -136,7 +146,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(id, Guid.NewGuid(), new() { NewQty = 10 });
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new AdjustItemQty.Command(context, id, Guid.NewGuid(), new() { NewQty = 10 });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -160,11 +173,14 @@ public class OrderCommandTests {
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "Example Order", Enumerable.Empty<OrderedItem>()));
+            .ReturnsAsync(() => new(order_id, 0, "Example Order", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
 
-        var request = new AdjustItemQty.Command(order_id, item_id, new() { NewQty = 10 });
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new AdjustItemQty.Command(context, order_id, item_id, new() { NewQty = 10 });
         var handler = new AdjustItemQty.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -190,11 +206,14 @@ public class OrderCommandTests {
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, original_name, Enumerable.Empty<OrderedItem>()));
+            .ReturnsAsync(() => new(order_id, 0, original_name, Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
 
-        var request = new SetName.Command(order_id, new_name);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetName.Command(context, order_id, new_name);
         var handler = new SetName.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -227,7 +246,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new SetName.Command(order_id, new_name);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new SetName.Command(context, order_id, new_name);
         var handler = new SetName.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -249,11 +271,14 @@ public class OrderCommandTests {
         Guid order_id = Guid.NewGuid();
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "", Enumerable.Empty<OrderedItem>()));
+            .ReturnsAsync(() => new(order_id, 0, "", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
 
-        var request = new Delete.Command(order_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Delete.Command(context, order_id);
         var handler = new Delete.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -276,7 +301,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new Delete.Command(order_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Delete.Command(context, order_id);
         var handler = new Delete.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -300,7 +328,10 @@ public class OrderCommandTests {
         var mock = new Mock<IRepository<Order>>();
         var repo = mock.Object;
 
-        var request = new Create.Command(new() { Name = expected_name, NewItems = Enumerable.Empty<NewOrderedItem>()});
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new Create.Command(context, new() { Name = expected_name, NewItems = Enumerable.Empty<NewOrderedItem>()});
         var handler = new Create.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -326,13 +357,16 @@ public class OrderCommandTests {
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "Example Order", new List<OrderedItem>() {
-                new(item_id, order_id, "Example Item", 5)
+            .ReturnsAsync(() => new(order_id, 0, "Example Order", new List<OrderedItem>() {
+                new(item_id, 0, order_id, "Example Item", 5)
             }));
 
         var repo = mock.Object;
 
-        var request = new RemoveItem.Command(order_id, item_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new RemoveItem.Command(context, order_id, item_id);
         var handler = new RemoveItem.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -358,7 +392,10 @@ public class OrderCommandTests {
 
         var repo = mock.Object;
 
-        var request = new RemoveItem.Command(order_id, item_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new RemoveItem.Command(context, order_id, item_id);
         var handler = new RemoveItem.Handler(repo);
         var token = new CancellationTokenSource().Token;
 
@@ -380,11 +417,14 @@ public class OrderCommandTests {
 
         var mock = new Mock<IRepository<Order>>();
         mock.Setup(x => x.Get(order_id))
-            .ReturnsAsync(() => new(order_id, "Example Order", Enumerable.Empty<OrderedItem>()));
+            .ReturnsAsync(() => new(order_id, 0, "Example Order", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
 
-        var request = new RemoveItem.Command(order_id, item_id);
+        var httpmock = new Mock<HttpContext>();
+        var context = httpmock.Object;
+
+        var request = new RemoveItem.Command(context, order_id, item_id);
         var handler = new RemoveItem.Handler(repo);
         var token = new CancellationTokenSource().Token;
 

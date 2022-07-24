@@ -9,7 +9,7 @@ public class Order : Entity {
     private List<OrderedItem> _items { get; init; }
     public IReadOnlyCollection<OrderedItem> Items => _items.AsReadOnly();
 
-    public Order(Guid id, string name, IEnumerable<OrderedItem> items) : base(id) {
+    public Order(Guid id, int version, string name, IEnumerable<OrderedItem> items) : base(id, version) {
         Name = name;
         _items = new(items);
     }
@@ -17,7 +17,7 @@ public class Order : Entity {
     /// <summary>
     /// Private constructor is used to create a new order and initilize it to a valid 'default' 
     /// </summary>
-    private Order(string name) : this(Guid.NewGuid(), name, Enumerable.Empty<OrderedItem>()) {
+    private Order(string name) : this(Guid.NewGuid(), 0, name, Enumerable.Empty<OrderedItem>()) {
         AddEvent(new Events.OrderCreatedEvent(Id, Name));
     }
 
