@@ -22,7 +22,7 @@ public class Get {
 
         public async Task<IActionResult> Handle(Query request, CancellationToken cancellationToken) {
 
-            const string query = "SELECT id, name FROM orders WHERE id = @OrderId;";
+            const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders WHERE orders.id = @OrderId;";
             OrderDTO? order = await _connection.QuerySingleOrDefaultAsync<OrderDTO>(query, request);
 
             if (order is null) {

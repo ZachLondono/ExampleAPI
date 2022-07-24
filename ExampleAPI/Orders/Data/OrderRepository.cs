@@ -37,7 +37,7 @@ public class OrderRepository :  IRepository<Order> {
     }
 
     public async Task<Order?> Get(Guid id) {
-        const string orderQuery = "SELECT id, name FROM orders WHERE id = @Id;";
+        const string orderQuery = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders WHERE orders.id = @Id;";
 
         var orderData = await _connection.QuerySingleOrDefaultAsync<OrderData>(orderQuery, new { Id = id });
 
@@ -53,7 +53,7 @@ public class OrderRepository :  IRepository<Order> {
     }
 
     public async Task<IEnumerable<Order>> GetAll() {
-        const string query = "SELECT id, name FROM orders;";
+        const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders;";
 
         var ordersData = await _connection.QueryAsync<OrderData>(query);
 

@@ -28,7 +28,7 @@ public class CompanyRepository : IRepository<Company> {
 
     public async Task<Company?> Get(Guid id) {
 
-        const string query = "SELECT id, name, line1, line2, city, state, zip FROM companies WHERE id = @Id;";
+        const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies WHERE companies.id = @Id;";
 
         var companyData = await _connection.QuerySingleOrDefaultAsync<CompanyData>(sql: query, param: new { Id = id });
 
@@ -50,7 +50,7 @@ public class CompanyRepository : IRepository<Company> {
 
     public async Task<IEnumerable<Company>> GetAll() {
 
-        const string query = "SELECT id, name, line1, line2, city, state, zip FROM companies;";
+        const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies;";
 
         var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, 0, c.Name, a), splitOn: "line1");
 
