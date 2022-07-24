@@ -13,6 +13,12 @@ public class Company : Entity {
         Address = address;
     }
 
+    private Company(string name, Address address) : this(Guid.NewGuid(), name, address) {
+        AddEvent(new Events.CompanyCreatedEvent(Id, name));
+    }
+
+    public static Company Create(string name, Address address) => new(name, address);
+
     public void SetAddress(Address address) {
         AddEvent(new Events.AddressChangedEvent(Id, address));
         Address = address;

@@ -16,19 +16,13 @@ public class CompanyRepository : IRepository<Company> {
         _publisher = publisher;
     }
 
-    public async Task<Company> Create() {
+    public async Task Add(Company entity) {
 
         const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
-        const string defaultName = "New Company";
+        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name});
 
-        Guid newId = Guid.NewGuid();
-
-        await _connection.ExecuteAsync(query, new { Id = newId, Name = defaultName });
-
-        _ = _publisher.Publish(new Events.CompanyCreatedEvent(newId));
-
-        return new(newId, defaultName, new());
+        await entity.PublishEvents(_publisher);
 
     }
 
@@ -40,7 +34,7 @@ public class CompanyRepository : IRepository<Company> {
 
         if (companyData is null) return null;
 
-        Address? address = null;
+        Address address = new();
         if (companyData.Line1 is not null &&
             companyData.City is not null &&
             companyData.State is not null &&
@@ -108,7 +102,7 @@ public class CompanyRepository : IRepository<Company> {
         trx.Commit();
         _connection.Close();
 
-        entity.PublishEvents(_publisher);
+        await entity.PublishEvents(_publisher);
 
     }
 

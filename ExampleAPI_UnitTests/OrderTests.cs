@@ -1,4 +1,5 @@
 using ExampleAPI.Orders.Domain;
+using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,20 @@ using Xunit;
 
 namespace ExampleAPI_UnitTests;
 public class OrderTests {
+
+    [Fact]
+    public void Should_CreateNewOrder() {
+
+        // Arrange
+        string newname = "New Name";
+
+        // Act
+        var order = Order.Create(newname);
+
+        // Assert
+        order.Name.Should().Be(newname);
+
+    }
 
     [Fact]
     public void Should_AddItemToOrder() {
@@ -45,9 +60,10 @@ public class OrderTests {
     public void Should_RemoveItemFromOrder() {
 
         // Arrange
-        var item = new OrderedItem(Guid.NewGuid(), "New Item", 5);
+        var order_id = Guid.NewGuid();
+        var item = new OrderedItem(Guid.NewGuid(), order_id, "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(Guid.NewGuid(), "Test Order", items);
+        var order = new Order(order_id, "Test Order", items);
 
         // Act 
         order.RemoveItem(item);
@@ -61,9 +77,10 @@ public class OrderTests {
     public void Should_CreateEvent_WhenRemovingItemFromOrder() {
 
         // Arrange
-        var item = new OrderedItem(Guid.NewGuid(), "New Item", 5);
+        var order_id = Guid.NewGuid();
+        var item = new OrderedItem(Guid.NewGuid(), order_id, "New Item", 5);
         var items = new List<OrderedItem>() { item };
-        var order = new Order(Guid.NewGuid(), "Test Order", items);
+        var order = new Order(order_id, "Test Order", items);
 
         // Act 
         order.RemoveItem(item);

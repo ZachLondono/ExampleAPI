@@ -14,20 +14,29 @@ public class Order : Entity {
         _items = new(items);
     }
 
+    /// <summary>
+    /// Private constructor is used to create a new order and initilize it to a valid 'default' 
+    /// </summary>
+    private Order(string name) : this(Guid.NewGuid(), name, Enumerable.Empty<OrderedItem>()) {
+        AddEvent(new Events.OrderCreatedEvent(Id, Name));
+    }
+
+    public static Order Create(string name) => new(name);
+
     public void SetName(string name) {
-        AddEvent(new Events.OrderNameChangedEvent(name));
+        AddEvent(new Events.OrderNameChangedEvent(Id, name));
         Name = name;
     }
 
     public OrderedItem AddItem(string name, int qty) {
-        var item = new OrderedItem(Guid.NewGuid(), name, qty);
-        AddEvent(new Events.ItemAddedEvent(item.Id, name, qty));
+        var item = OrderedItem.Create(Id, name, qty);
+        AddEvent(new Events.ItemAddedEvent(Id, item.Id, name, qty));
         _items.Add(item);
         return item;
     }
 
     public void RemoveItem(OrderedItem item) {
-        AddEvent(new Events.ItemRemovedEvent(item.Id));
+        AddEvent(new Events.ItemRemovedEvent(Id, item.Id));
         _items.Remove(item);
     }
 
