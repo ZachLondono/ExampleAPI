@@ -13,19 +13,21 @@ public class GetAll {
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 
-        private readonly IDbConnection _connection;
+        private readonly NpgsqlOrderConnectionFactory _factory;
 
         public Handler(NpgsqlOrderConnectionFactory factory) {
-            _connection = factory.CreateConnection();
+            _factory = factory;
         }
 
         public async Task<IActionResult> Handle(Query request, CancellationToken cancellationToken) {
 
+            using var connection = _factory.CreateConnection();
+
             const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders;";
-            var orders = await _connection.QueryAsync<OrderDTO>(query);
+            var orders = await connection.QueryAsync<OrderDTO>(query);
 
             foreach (var order in orders) {
-                var items = await GetItemsFromOrderId(_connection, order.Id);
+                var items = await GetItemsFromOrderId(connection, order.Id);
                 order.Items = items;
             }
 

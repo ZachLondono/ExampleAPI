@@ -20,7 +20,7 @@ public class Get {
 
         public async Task<IActionResult> Handle(Query request, CancellationToken cancellationToken) {
 
-            var connection = _factory.CreateConnection();
+            using var connection = _factory.CreateConnection();
 
             const string query = "SELECT companies.id, name, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1), line1, line2, city, state, zip FROM companies WHERE companies.id = @CompanyId;";
 
