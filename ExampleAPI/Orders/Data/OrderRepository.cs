@@ -165,4 +165,8 @@ public class OrderRepository :  IRepository<Order> {
 
     }
 
+    ~OrderRepository() {
+        _connection.Dispose();
+    }
+
 }

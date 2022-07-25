@@ -106,4 +106,8 @@ public class CompanyRepository : IRepository<Company> {
 
     }
 
+    ~CompanyRepository() {
+        _connection.Dispose();
+    }
+
 }
