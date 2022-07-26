@@ -32,7 +32,7 @@ public class OrderCommandTests {
         };
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(expected_id))
+        mock.Setup(x => x.GetAsync(expected_id))
             .ReturnsAsync(() => expected_order);
 
         var repo = mock.Object;
@@ -71,7 +71,7 @@ public class OrderCommandTests {
         Guid id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(id))
+        mock.Setup(x => x.GetAsync(id))
             .ReturnsAsync(() => null);
 
         var repo = mock.Object;
@@ -105,7 +105,7 @@ public class OrderCommandTests {
         int new_qty = 10;
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0,"Example Order", new List<OrderedItem>() {
                 new(item_id, 0, order_id, "Example Item", original_qty)
             }));
@@ -141,7 +141,7 @@ public class OrderCommandTests {
         Guid id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(id))
+        mock.Setup(x => x.GetAsync(id))
             .ReturnsAsync(() => null);
 
         var repo = mock.Object;
@@ -172,7 +172,7 @@ public class OrderCommandTests {
         Guid item_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "Example Order", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
@@ -205,7 +205,7 @@ public class OrderCommandTests {
         var new_name = new NewOrderName() { Name = "New_name" };
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, original_name, Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
@@ -241,7 +241,7 @@ public class OrderCommandTests {
         var new_name = new NewOrderName() { Name = "New_name" };
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => null);
 
         var repo = mock.Object;
@@ -270,7 +270,7 @@ public class OrderCommandTests {
         // Arrange
         Guid order_id = Guid.NewGuid();
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;
@@ -297,7 +297,7 @@ public class OrderCommandTests {
         // Arrange
         Guid order_id = Guid.NewGuid();
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id)).ReturnsAsync(() => null);
+        mock.Setup(x => x.GetAsync(order_id)).ReturnsAsync(() => null);
 
         var repo = mock.Object;
 
@@ -356,7 +356,7 @@ public class OrderCommandTests {
         Guid item_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "Example Order", new List<OrderedItem>() {
                 new(item_id, 0, order_id, "Example Item", 5)
             }));
@@ -387,7 +387,7 @@ public class OrderCommandTests {
         Guid item_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => null);
 
         var repo = mock.Object;
@@ -416,7 +416,7 @@ public class OrderCommandTests {
         Guid item_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Order>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "Example Order", Enumerable.Empty<OrderedItem>()));
 
         var repo = mock.Object;

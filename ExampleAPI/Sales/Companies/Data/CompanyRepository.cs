@@ -3,12 +3,11 @@ using MediatR;
 using Dapper;
 using System.Data;
 using ExampleAPI.Common.Data;
-using ExampleAPI.Common.Domain;
 
 namespace ExampleAPI.Sales.Companies.Data;
 
-public class CompanyRepository : IRepository<Company> {
-    
+public class CompanyRepository : ICompanyRepository {
+
     private readonly IDbConnection _connection;
     private readonly IPublisher _publisher;
 
@@ -17,17 +16,17 @@ public class CompanyRepository : IRepository<Company> {
         _publisher = publisher;
     }
 
-    public async Task Add(Company entity) {
+    public async Task AddAsync(Company entity) {
 
         const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
-        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name});
+        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name });
 
         await entity.PublishEvents(_publisher);
 
     }
 
-    public async Task<Company?> Get(Guid id) {
+    public async Task<Company?> GetAsync(Guid id) {
 
         const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies WHERE companies.id = @Id;";
 
@@ -49,7 +48,7 @@ public class CompanyRepository : IRepository<Company> {
 
     }
 
-    public async Task<IEnumerable<Company>> GetAll() {
+    public async Task<IEnumerable<Company>> GetAllAsync() {
 
         const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies;";
 
@@ -59,7 +58,7 @@ public class CompanyRepository : IRepository<Company> {
 
     }
 
-    public async Task Remove(Company entity) {
+    public async Task RemoveAsync(Company entity) {
 
         const string command = "DELETE FROM companies WHERE id = @Id;";
 
@@ -67,7 +66,7 @@ public class CompanyRepository : IRepository<Company> {
 
     }
 
-    public async Task Save(Company entity) {
+    public async Task UpdateAsync(Company entity) {
 
         _connection.Open();
         var trx = _connection.BeginTransaction();
@@ -96,7 +95,7 @@ public class CompanyRepository : IRepository<Company> {
                     addressChanged.NewAddress.Zip,
                 }, trx);
 
-            } 
+            }
 
         }
 

@@ -10,21 +10,22 @@ public class Delete {
     public record Command(HttpContext Context, Guid OrderId) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
-        
-        private readonly IRepository<Order> _repository;
 
-        public Handler(IRepository<Order> repository) {
-            _repository = repository;
+        private readonly SalesUnitOfWork _work;
+
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
-            var order = await _repository.Get(request.OrderId);
+            var order = await _work.Orders.GetAsync(request.OrderId);
 
             if (order is null) {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
-            await _repository.Remove(order);
+            await _work.Orders.RemoveAsync(order);
+            await _work.CommitAsync();
 
             return new NoContentResult();
         }

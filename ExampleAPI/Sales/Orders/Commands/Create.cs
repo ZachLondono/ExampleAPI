@@ -12,10 +12,10 @@ public class Create {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly IRepository<Order> _repository;
+        private readonly SalesUnitOfWork _work;
 
-        public Handler(IRepository<Order> repository) {
-            _repository = repository;
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
@@ -28,7 +28,8 @@ public class Create {
                 }
             }
 
-            await _repository.Add(order);
+            await _work.Orders.AddAsync(order);
+            await _work.CommitAsync();
 
             var itemDTOs = new List<OrderedItemDTO>();
 

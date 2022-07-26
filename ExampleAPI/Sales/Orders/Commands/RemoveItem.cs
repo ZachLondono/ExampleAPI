@@ -11,17 +11,17 @@ public class RemoveItem {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly IRepository<Order> _repository;
+        private readonly SalesUnitOfWork _work;
 
-        public Handler(IRepository<Order> repository) {
-            _repository = repository;
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
             //TODO: return a representation of the current order resource, rather than no content
 
-            var order = await _repository.Get(request.OrderId);
+            var order = await _work.Orders.GetAsync(request.OrderId);
 
             if (order is null) {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
@@ -53,7 +53,8 @@ public class RemoveItem {
 
             order.RemoveItem(item);
 
-            await _repository.Save(order);
+            await _work.Orders.UpdateAsync(order);
+            await _work.CommitAsync();
 
             try { 
                 request.Context.Response.Headers.ETag = order.Version.ToString();

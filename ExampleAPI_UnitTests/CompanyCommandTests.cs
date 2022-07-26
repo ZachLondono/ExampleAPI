@@ -64,7 +64,7 @@ public class CompanyCommandTests {
         var order_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
@@ -91,7 +91,7 @@ public class CompanyCommandTests {
         var order_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
@@ -125,7 +125,7 @@ public class CompanyCommandTests {
         };
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
@@ -158,7 +158,7 @@ public class CompanyCommandTests {
         var order_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 
@@ -186,7 +186,7 @@ public class CompanyCommandTests {
         var new_name = new NewCompanyName() { Name = "New Name" };
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => new(order_id, 0, "", new()));
         var repo = mock.Object;
 
@@ -219,7 +219,7 @@ public class CompanyCommandTests {
         var order_id = Guid.NewGuid();
 
         var mock = new Mock<IRepository<Company>>();
-        mock.Setup(x => x.Get(order_id))
+        mock.Setup(x => x.GetAsync(order_id))
             .ReturnsAsync(() => null);
         var repo = mock.Object;
 

@@ -12,14 +12,14 @@ public class SetName {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly IRepository<Order> _repository;
+        private readonly SalesUnitOfWork _work;
 
-        public Handler(IRepository<Order> repository) {
-            _repository = repository;
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
-            var order = await _repository.Get(request.OrderId);
+            var order = await _work.Orders.GetAsync(request.OrderId);
 
             if (order is null) {
                 return new NotFoundResult();
@@ -45,7 +45,8 @@ public class SetName {
 
             order.SetName(request.NewName.Name);
 
-            await _repository.Save(order);
+            await _work.Orders.UpdateAsync(order);
+            await _work.CommitAsync();
 
             var itemDTOs = new List<OrderedItemDTO>();
             foreach (var item in order.Items) {

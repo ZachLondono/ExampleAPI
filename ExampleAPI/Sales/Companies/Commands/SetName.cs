@@ -11,16 +11,16 @@ public class SetName {
     public record Command(HttpContext Context, Guid CompanyId, NewCompanyName NewName) : EndpointRequest(Context);
 
     public class Handler : IRequestHandler<Command, IActionResult> {
-        
-        private readonly IRepository<Company> _repository;
 
-        public Handler(IRepository<Company> repository) {
-            _repository = repository;
+        private readonly SalesUnitOfWork _work;
+
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
-            var company = await _repository.Get(request.CompanyId);
+            var company = await _work.Companies.GetAsync(request.CompanyId);
 
             if (company is null) {
                 return new NotFoundObjectResult($"Company with Id {request.CompanyId} not found");
@@ -45,7 +45,8 @@ public class SetName {
             }
 
             company.SetName(request.NewName.Name);
-            await _repository.Save(company);
+            await _work.Companies.UpdateAsync(company);
+            await _work.CommitAsync();
 
             var addrDto = new AddressDTO();
 

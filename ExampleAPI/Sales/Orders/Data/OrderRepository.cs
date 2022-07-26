@@ -1,13 +1,12 @@
 ﻿using Dapper;
 using ExampleAPI.Common.Data;
-using ExampleAPI.Common.Domain;
 using ExampleAPI.Sales.Orders.Domain;
 using MediatR;
 using System.Data;
 
 namespace ExampleAPI.Sales.Orders.Data;
 
-public class OrderRepository :  IRepository<Order> {
+public class OrderRepository :  IOrderRepository {
 
     private readonly IDbConnection _connection;
     private readonly IPublisher _publisher;
@@ -17,7 +16,7 @@ public class OrderRepository :  IRepository<Order> {
         _publisher = publisher;
     }
 
-    public async Task Add(Order entity) {
+    public async Task AddAsync(Order entity) {
 
         const string command = "INSERT INTO orders (id, name) values (@Id, @Name);";
 
@@ -37,7 +36,7 @@ public class OrderRepository :  IRepository<Order> {
 
     }
 
-    public async Task<Order?> Get(Guid id) {
+    public async Task<Order?> GetAsync(Guid id) {
         const string orderQuery = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders WHERE orders.id = @Id;";
 
         var orderData = await _connection.QuerySingleOrDefaultAsync<OrderData>(orderQuery, new { Id = id });
@@ -53,7 +52,7 @@ public class OrderRepository :  IRepository<Order> {
         return order;
     }
 
-    public async Task<IEnumerable<Order>> GetAll() {
+    public async Task<IEnumerable<Order>> GetAllAsync() {
         const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders;";
 
         var ordersData = await _connection.QueryAsync<OrderData>(query);
@@ -83,13 +82,13 @@ public class OrderRepository :  IRepository<Order> {
         return items;
     }
 
-    public async Task Remove(Order entity) {
+    public async Task RemoveAsync(Order entity) {
         // PostgreSQL ueses cascading delete to remove ordered items
         const string command = "DELETE FROM orders WHERE id = @OrderId;";
         await _connection.ExecuteAsync(command, new { OrderId = entity.Id });
     }
 
-    public async Task Save(Order entity) {
+    public async Task UpdateAsync(Order entity) {
 
         _connection.Open();
         var trx = _connection.BeginTransaction();

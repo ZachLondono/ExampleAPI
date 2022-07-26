@@ -12,10 +12,10 @@ public class Create {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly IRepository<Company> _repository;
+        private readonly SalesUnitOfWork _work;
 
-        public Handler(IRepository<Company> repository) {
-            _repository = repository;
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
@@ -24,7 +24,8 @@ public class Create {
             var addr = request.NewCompany.Address;
             var company = Company.Create(name, new(addr.Line1, addr.Line2, addr.City, addr.State, addr.Zip));
 
-            await _repository.Add(company);
+            await _work.Companies.AddAsync(company);
+            await _work.CommitAsync();
 
             var companyDto = new CompanyDTO() {
                 Id = company.Id,

@@ -12,14 +12,14 @@ public class AdjustItemQty {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly IRepository<Order> _repository;
+        private readonly SalesUnitOfWork _work;
 
-        public Handler(IRepository<Order> repository) {
-            _repository = repository;
+        public Handler(SalesUnitOfWork work) {
+            _work = work;
         }
 
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
-            var order = await _repository.Get(request.OrderId);
+            var order = await _work.Orders.GetAsync(request.OrderId);
 
             if (order is null) {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
@@ -49,7 +49,8 @@ public class AdjustItemQty {
             }
 
             item.AdjustQty(request.ItemAdjustment.NewQty);
-            await _repository.Save(order);
+            await _work.Orders.UpdateAsync(order);
+            await _work.CommitAsync();
 
             item = order.Items.SingleOrDefault(i => i.Id == request.ItemId);
             if (item is null) {
