@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using ExampleAPI.Common.Domain;
-using ExampleAPI.Sales.Orders.Data;
 using ExampleAPI.Sales.Orders.DTO;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 
 namespace ExampleAPI.Sales.Orders.Queries;
 

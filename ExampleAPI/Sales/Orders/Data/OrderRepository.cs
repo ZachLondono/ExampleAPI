@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using ExampleAPI.Common.Data;
 using ExampleAPI.Sales.Orders.Domain;
 using MediatR;
 using System.Data;

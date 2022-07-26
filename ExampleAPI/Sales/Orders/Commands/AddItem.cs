@@ -1,5 +1,4 @@
 ﻿using ExampleAPI.Common.Domain;
-using ExampleAPI.Sales.Orders.Domain;
 using ExampleAPI.Sales.Orders.DTO;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

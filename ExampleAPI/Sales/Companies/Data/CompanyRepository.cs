@@ -2,7 +2,6 @@
 using MediatR;
 using Dapper;
 using System.Data;
-using ExampleAPI.Common.Data;
 
 namespace ExampleAPI.Sales.Companies.Data;
 
