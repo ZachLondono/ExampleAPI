@@ -1,4 +1,4 @@
-﻿using ExampleAPI.Companies.Domain;
+﻿using ExampleAPI.Sales.Companies.Domain;
 using Xunit;
 using FluentAssertions;
 using System;

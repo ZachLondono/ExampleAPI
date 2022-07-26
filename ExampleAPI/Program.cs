@@ -1,8 +1,9 @@
-using ExampleAPI.Common;
-using ExampleAPI.Companies.Data;
-using ExampleAPI.Companies.Domain;
-using ExampleAPI.Orders.Data;
-using ExampleAPI.Orders.Domain;
+using ExampleAPI.Common.Data;
+using ExampleAPI.Common.Domain;
+using ExampleAPI.Sales.Companies.Data;
+using ExampleAPI.Sales.Companies.Domain;
+using ExampleAPI.Sales.Orders.Data;
+using ExampleAPI.Sales.Orders.Domain;
 using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
