@@ -9,10 +9,12 @@ namespace ExampleAPI.Sales.Orders.Data;
 public class OrderRepository :  IOrderRepository {
 
     private readonly IDbConnection _connection;
+    private readonly IDbTransaction _transaction;
     private readonly IPublisher _publisher;
 
-    public OrderRepository(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
-        _connection = factory.CreateConnection();
+    public OrderRepository(IDbConnection connection, IDbTransaction transaction, IPublisher publisher) {
+        _connection = connection;
+        _transaction = transaction;
         _publisher = publisher;
     }
 
@@ -20,32 +22,25 @@ public class OrderRepository :  IOrderRepository {
 
         const string command = "INSERT INTO orders (id, name) values (@Id, @Name);";
 
-        _connection.Open();
-        var trx = _connection.BeginTransaction();
-
-        await _connection.ExecuteAsync(command, new { entity.Id, entity.Name }, trx);
+        await _connection.ExecuteAsync(command, new { entity.Id, entity.Name }, _transaction);
         foreach (var item in entity.Items) {
-            await InsertItem(entity, item.Id, item.Name, item.Qty, trx);
+            await InsertItem(entity, item.Id, item.Name, item.Qty, _connection, _transaction);
         }
 
-        trx.Commit();
-        _connection.Close();
-
         await entity.PublishEvents(_publisher);
-
 
     }
 
     public async Task<Order?> GetAsync(Guid id) {
         const string orderQuery = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders WHERE orders.id = @Id;";
 
-        var orderData = await _connection.QuerySingleOrDefaultAsync<OrderData>(orderQuery, new { Id = id });
+        var orderData = await _connection.QuerySingleOrDefaultAsync<OrderData>(orderQuery, new { Id = id }, _transaction);
 
         if (orderData == default) {
             return null;
         }
 
-        var items = await GetItemsFromOrderId(_connection, id);
+        var items = await GetItemsFromOrderId(_connection, id, _transaction);
 
         var order =  new Order(orderData.Id, orderData.Version, orderData.Name, items);
 
@@ -55,12 +50,12 @@ public class OrderRepository :  IOrderRepository {
     public async Task<IEnumerable<Order>> GetAllAsync() {
         const string query = "SELECT orders.id, name, (SELECT version FROM events WHERE orders.id = streamid ORDER BY version DESC LIMIT 1) FROM orders;";
 
-        var ordersData = await _connection.QueryAsync<OrderData>(query);
+        var ordersData = await _connection.QueryAsync<OrderData>(query, _transaction);
 
         List<Order> orders = new();
         foreach (var orderData in ordersData) {
 
-            var items = await GetItemsFromOrderId(_connection, orderData.Id);
+            var items = await GetItemsFromOrderId(_connection, orderData.Id, _transaction);
 
             orders.Add(new(orderData.Id, orderData.Version, orderData.Name, items));
 
@@ -69,7 +64,7 @@ public class OrderRepository :  IOrderRepository {
         return orders;
     }
 
-    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction? transaction = null) {
+    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction transaction) {
         const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
 
         var itemsData = await connection.QueryAsync<OrderedItemData>(itemQuery, new { OrderId = orderId }, transaction);
@@ -85,13 +80,10 @@ public class OrderRepository :  IOrderRepository {
     public async Task RemoveAsync(Order entity) {
         // PostgreSQL ueses cascading delete to remove ordered items
         const string command = "DELETE FROM orders WHERE id = @OrderId;";
-        await _connection.ExecuteAsync(command, new { OrderId = entity.Id });
+        await _connection.ExecuteAsync(command, new { OrderId = entity.Id }, _transaction);
     }
 
     public async Task UpdateAsync(Order entity) {
-
-        _connection.Open();
-        var trx = _connection.BeginTransaction();
 
         foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 
@@ -102,29 +94,26 @@ public class OrderRepository :  IOrderRepository {
                 await _connection.ExecuteAsync(command, new {
                     nameChanged.Name,
                     entity.Id
-                }, trx);
+                }, _transaction);
 
             } else if (domainEvent is Events.ItemAddedEvent itemAdded) {
                 
-                await InsertItem(entity, itemAdded.ItemId, itemAdded.Name, itemAdded.Qty, trx);
+                await InsertItem(entity, itemAdded.ItemId, itemAdded.Name, itemAdded.Qty, _connection, _transaction);
 
             } else if (domainEvent is Events.ItemRemovedEvent itemRemoved) {
 
                 const string command = "DELETE FROM ordereditems WHERE id = @Id;";
                 await _connection.ExecuteAsync(command, new {
                     Id = itemRemoved.ItemId,
-                }, trx);
+                }, _transaction);
 
             }
 
         }
 
         foreach (var item in entity.Items) {
-            await SaveItem(item, _connection, trx);
+            await SaveItem(item, _connection, _transaction);
         }
-
-        trx.Commit();
-        _connection.Close();
 
         await entity.PublishEvents(_publisher);
         entity.ClearEvents();
@@ -136,9 +125,9 @@ public class OrderRepository :  IOrderRepository {
 
     }
 
-    private async Task InsertItem(Order entity, Guid itemId, string itemName, int itemQty, IDbTransaction trx) {
+    private async static Task InsertItem(Order entity, Guid itemId, string itemName, int itemQty, IDbConnection connection, IDbTransaction trx) {
         const string command = "INSERT INTO ordereditems (id, name, qty, orderid) VALUES (@Id, @Name, @Qty, @OrderId);";
-        await _connection.ExecuteAsync(command, new {
+        await connection.ExecuteAsync(command, new {
             Id = itemId,
             Name = itemName,
             Qty = itemQty,
@@ -163,10 +152,6 @@ public class OrderRepository :  IOrderRepository {
 
         }
 
-    }
-
-    ~OrderRepository() {
-        _connection.Dispose();
     }
 
 }

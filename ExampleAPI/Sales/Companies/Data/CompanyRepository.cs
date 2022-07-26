@@ -9,10 +9,12 @@ namespace ExampleAPI.Sales.Companies.Data;
 public class CompanyRepository : ICompanyRepository {
 
     private readonly IDbConnection _connection;
+    private readonly IDbTransaction _transaction;
     private readonly IPublisher _publisher;
 
-    public CompanyRepository(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
-        _connection = factory.CreateConnection();
+    public CompanyRepository(IDbConnection connection, IDbTransaction transaction, IPublisher publisher) {
+        _connection = connection;
+        _transaction = transaction;
         _publisher = publisher;
     }
 
@@ -20,7 +22,7 @@ public class CompanyRepository : ICompanyRepository {
 
         const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
-        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name });
+        await _connection.ExecuteAsync(query, new { entity.Id, entity.Name }, _transaction);
 
         await entity.PublishEvents(_publisher);
 
@@ -30,7 +32,7 @@ public class CompanyRepository : ICompanyRepository {
 
         const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies WHERE companies.id = @Id;";
 
-        var companyData = await _connection.QuerySingleOrDefaultAsync<CompanyData>(sql: query, param: new { Id = id });
+        var companyData = await _connection.QuerySingleOrDefaultAsync<CompanyData>(sql: query, param: new { Id = id }, _transaction);
 
         if (companyData is null) return null;
 
@@ -52,7 +54,7 @@ public class CompanyRepository : ICompanyRepository {
 
         const string query = "SELECT companies.id, name, line1, line2, city, state, zip, (SELECT version FROM events WHERE companies.id = streamid ORDER BY version DESC LIMIT 1) FROM companies;";
 
-        var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, c.Version, c.Name, a), splitOn: "line1");
+        var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, c.Version, c.Name, a), splitOn: "line1", transaction: _transaction);
 
         return companies;
 
@@ -62,14 +64,11 @@ public class CompanyRepository : ICompanyRepository {
 
         const string command = "DELETE FROM companies WHERE id = @Id;";
 
-        await _connection.ExecuteAsync(command, new { entity.Id });
+        await _connection.ExecuteAsync(command, new { entity.Id }, _transaction);
 
     }
 
     public async Task UpdateAsync(Company entity) {
-
-        _connection.Open();
-        var trx = _connection.BeginTransaction();
 
         foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 
@@ -80,7 +79,7 @@ public class CompanyRepository : ICompanyRepository {
                 await _connection.ExecuteAsync(command, new {
                     entity.Name,
                     entity.Id
-                }, trx);
+                }, _transaction);
 
             } else if (domainEvent is Events.AddressChangedEvent addressChanged) {
 
@@ -93,21 +92,14 @@ public class CompanyRepository : ICompanyRepository {
                     addressChanged.NewAddress.City,
                     addressChanged.NewAddress.State,
                     addressChanged.NewAddress.Zip,
-                }, trx);
+                }, _transaction);
 
             }
 
         }
 
-        trx.Commit();
-        _connection.Close();
-
         await entity.PublishEvents(_publisher);
 
-    }
-
-    ~CompanyRepository() {
-        _connection.Dispose();
     }
 
 }

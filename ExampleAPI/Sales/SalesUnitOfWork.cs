@@ -1,24 +1,61 @@
-﻿using ExampleAPI.Sales.Companies.Data;
+﻿using ExampleAPI.Common.Data;
+using ExampleAPI.Sales.Companies.Data;
 using ExampleAPI.Sales.Orders.Data;
+using MediatR;
+using System.Data;
 
 namespace ExampleAPI.Sales;
 
-public class SalesUnitOfWork : ISalesUnitOfWork {
+public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
 
-    public IOrderRepository Orders { get; init; }
-    public ICompanyRepository Companies { get; init; }
+    private readonly IDbConnection _connection;
+    private IDbTransaction _transaction;
+    private IPublisher _publisher;
 
-    public SalesUnitOfWork(IOrderRepository orders, ICompanyRepository companies) {
-        Orders = orders;
-        Companies = companies;
+    public IOrderRepository Orders { get; private set; }
+    public ICompanyRepository Companies { get; private set; }
+
+    public SalesUnitOfWork(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
+
+        _connection = factory.CreateConnection();
+        _connection.Open();
+        _transaction = _connection.BeginTransaction();
+        _publisher = publisher;
+
+        // TODO: Use Func<> delegat to create the repositories so the constructor is not responsible for directly creating it's dependencies, and so we can use the interfaces instead of concreate classes
+        Orders = new OrderRepository(_connection, _transaction, _publisher);
+        Companies = new CompanyRepository(_connection, _transaction, _publisher);
     }
 
     public Task CommitAsync() {
-        
-        // The unit of work should create a transaction and pass it to the repositories to use
-        // When save changes is called here, the transaction is commited
+
+        try {
+            
+            _transaction.Commit();
+
+        } catch {
+            
+            _transaction.Rollback();
+            throw;
+
+        } finally {
+            
+            _transaction.Dispose();
+            _transaction = _connection.BeginTransaction();
+
+            // Reset the repositories, removing any state that they might have had
+            Orders = new OrderRepository(_connection, _transaction, _publisher);
+            Companies = new CompanyRepository(_connection, _transaction, _publisher);
+
+        }
 
         return Task.CompletedTask;
+    }
+
+
+    public void Dispose() {
+        _transaction.Dispose();
+        _connection.Dispose();
     }
 
 }
