@@ -10,6 +10,8 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
     private readonly IDbConnection _connection;
     private IDbTransaction _transaction;
     private IPublisher _publisher;
+    private readonly Func<IDbConnection, IDbTransaction, IPublisher, IOrderRepository> _ordersFactory;
+    private readonly Func<IDbConnection, IDbTransaction, IPublisher, ICompanyRepository> _companiesFactory;
 
     public IOrderRepository Orders { get; private set; }
     public ICompanyRepository Companies { get; private set; }
@@ -24,9 +26,11 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
         _connection.Open();
         _transaction = _connection.BeginTransaction();
         _publisher = publisher;
+        _ordersFactory = ordersFactory;
+        _companiesFactory = companiesFactory;
 
-        Orders = ordersFactory(_connection, _transaction, _publisher);
-        Companies = companiesFactory(_connection, _transaction, _publisher);
+        Orders = _ordersFactory(_connection, _transaction, _publisher);
+        Companies = _companiesFactory(_connection, _transaction, _publisher);
     }
 
     public Task CommitAsync() {
@@ -46,8 +50,8 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
             _transaction = _connection.BeginTransaction();
 
             // Reset the repositories, removing any state that they might have had
-            Orders = new OrderRepository(_connection, _transaction, _publisher);
-            Companies = new CompanyRepository(_connection, _transaction, _publisher);
+            Orders = _ordersFactory(_connection, _transaction, _publisher);
+            Companies = _companiesFactory(_connection, _transaction, _publisher);
 
         }
 

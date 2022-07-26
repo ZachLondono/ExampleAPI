@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using ExampleAPI.Common.Data;
 using ExampleAPI.Sales.Orders.Domain;
 using MediatR;
 using System.Data;
@@ -7,11 +8,11 @@ namespace ExampleAPI.Sales.Orders.Data;
 
 public class OrderRepository :  IOrderRepository {
 
-    private readonly IDbConnection _connection;
+    private readonly IDapperConnection _connection;
     private readonly IDbTransaction _transaction;
     private readonly IPublisher _publisher;
 
-    public OrderRepository(IDbConnection connection, IDbTransaction transaction, IPublisher publisher) {
+    public OrderRepository(IDapperConnection connection, IDbTransaction transaction, IPublisher publisher) {
         _connection = connection;
         _transaction = transaction;
         _publisher = publisher;
@@ -63,7 +64,7 @@ public class OrderRepository :  IOrderRepository {
         return orders;
     }
 
-    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDbConnection connection, Guid orderId, IDbTransaction transaction) {
+    private static async Task<IEnumerable<OrderedItem>> GetItemsFromOrderId(IDapperConnection connection, Guid orderId, IDbTransaction transaction) {
         const string itemQuery = "SELECT id, name, qty FROM ordereditems WHERE orderid = @OrderId;";
 
         var itemsData = await connection.QueryAsync<OrderedItemData>(itemQuery, new { OrderId = orderId }, transaction);
@@ -124,7 +125,7 @@ public class OrderRepository :  IOrderRepository {
 
     }
 
-    private async static Task InsertItem(Order entity, Guid itemId, string itemName, int itemQty, IDbConnection connection, IDbTransaction trx) {
+    private async static Task InsertItem(Order entity, Guid itemId, string itemName, int itemQty, IDapperConnection connection, IDbTransaction trx) {
         const string command = "INSERT INTO ordereditems (id, name, qty, orderid) VALUES (@Id, @Name, @Qty, @OrderId);";
         await connection.ExecuteAsync(command, new {
             Id = itemId,
@@ -134,7 +135,7 @@ public class OrderRepository :  IOrderRepository {
         }, trx);
     }
 
-    private static async Task SaveItem(OrderedItem entity, IDbConnection connection, IDbTransaction trx) {
+    private static async Task SaveItem(OrderedItem entity, IDapperConnection connection, IDbTransaction trx) {
         
         foreach (var domainEvent in entity.Events.Where(e => !e.IsPublished)) {
 

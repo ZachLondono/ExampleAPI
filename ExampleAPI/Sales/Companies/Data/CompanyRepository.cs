@@ -2,16 +2,17 @@
 using MediatR;
 using Dapper;
 using System.Data;
+using ExampleAPI.Common.Data;
 
 namespace ExampleAPI.Sales.Companies.Data;
 
 public class CompanyRepository : ICompanyRepository {
 
-    private readonly IDbConnection _connection;
+    private readonly IDapperConnection _connection;
     private readonly IDbTransaction _transaction;
     private readonly IPublisher _publisher;
 
-    public CompanyRepository(IDbConnection connection, IDbTransaction transaction, IPublisher publisher) {
+    public CompanyRepository(IDapperConnection connection, IDbTransaction transaction, IPublisher publisher) {
         _connection = connection;
         _transaction = transaction;
         _publisher = publisher;
