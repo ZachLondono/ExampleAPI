@@ -11,9 +11,9 @@ public class Delete {
 
     public class Handler : IRequestHandler<Command, IActionResult> {
 
-        private readonly SalesUnitOfWork _work;
+        private readonly ISalesUnitOfWork _work;
 
-        public Handler(SalesUnitOfWork work) {
+        public Handler(ISalesUnitOfWork work) {
             _work = work;
         }
 

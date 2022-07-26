@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using ExampleAPI.Common.Data;
 using ExampleAPI.Common.Domain;
 using ExampleAPI.Sales.Orders.Data;
 using ExampleAPI.Sales.Orders.DTO;
@@ -15,9 +14,9 @@ public class Get {
 
     public class Handler : IRequestHandler<Query, IActionResult> {
 
-        private readonly NpgsqlOrderConnectionFactory _factory;
+        private readonly NpgsqlSalesConnectionFactory _factory;
 
-        public Handler(NpgsqlOrderConnectionFactory factory) {
+        public Handler(NpgsqlSalesConnectionFactory factory) {
             _factory = factory;
         }
 

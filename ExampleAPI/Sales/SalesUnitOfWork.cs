@@ -1,5 +1,4 @@
-﻿using ExampleAPI.Common.Data;
-using ExampleAPI.Sales.Companies.Data;
+﻿using ExampleAPI.Sales.Companies.Data;
 using ExampleAPI.Sales.Orders.Data;
 using MediatR;
 using System.Data;
@@ -15,16 +14,19 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
     public IOrderRepository Orders { get; private set; }
     public ICompanyRepository Companies { get; private set; }
 
-    public SalesUnitOfWork(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
+    // TODO: use abstract factory pattern to make the constructor a little cleaner
+    public SalesUnitOfWork(NpgsqlSalesConnectionFactory factory,
+                            IPublisher publisher,
+                            Func<IDbConnection, IDbTransaction, IPublisher, IOrderRepository> ordersFactory,
+                            Func<IDbConnection, IDbTransaction, IPublisher, ICompanyRepository> companiesFactory) {
 
         _connection = factory.CreateConnection();
         _connection.Open();
         _transaction = _connection.BeginTransaction();
         _publisher = publisher;
 
-        // TODO: Use Func<> delegat to create the repositories so the constructor is not responsible for directly creating it's dependencies, and so we can use the interfaces instead of concreate classes
-        Orders = new OrderRepository(_connection, _transaction, _publisher);
-        Companies = new CompanyRepository(_connection, _transaction, _publisher);
+        Orders = ordersFactory(_connection, _transaction, _publisher);
+        Companies = companiesFactory(_connection, _transaction, _publisher);
     }
 
     public Task CommitAsync() {

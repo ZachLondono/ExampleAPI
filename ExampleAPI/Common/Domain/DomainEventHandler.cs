@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using ExampleAPI.Common.Data;
+using ExampleAPI.Sales;
 using MediatR;
 using System.Data;
 using System.Text.Json;
@@ -11,7 +12,7 @@ public class DomainEventHandler<TNotification> : INotificationHandler<TNotificat
     private readonly IDbConnection _connection;
     private readonly ILogger<DomainEventHandler<TNotification>> _logger;
 
-    public DomainEventHandler(NpgsqlOrderConnectionFactory factory, ILogger<DomainEventHandler<TNotification>> logger) {
+    public DomainEventHandler(NpgsqlSalesConnectionFactory factory, ILogger<DomainEventHandler<TNotification>> logger) {
         _connection = factory.CreateConnection();
         _logger = logger;
     }
