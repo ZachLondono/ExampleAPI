@@ -1,15 +1,15 @@
 ﻿using ExampleAPI.Common.Data;
-using ExampleAPI.Sales.Companies.Domain;
-using ExampleAPI.Sales.Orders.Domain;
+using ExampleAPI.Sales.Companies.Data;
+using ExampleAPI.Sales.Orders.Data;
 
 namespace ExampleAPI.Sales.Data;
 
-public class SalesPersistanceContext : IPersistanceContext {
+public class SalesPersistanceContext : IPersistanceContext, IDisposable {
 
-    public PersistanceSet<Company> Companies { get; init; }
-    public PersistanceSet<Order> Orders { get; init; }
+    public CompanySet Companies { get; init; }
+    public OrderSet Orders { get; init; }
 
-    public SalesPersistanceContext(PersistanceSet<Company> companies, PersistanceSet<Order> orders) {
+    public SalesPersistanceContext(CompanySet companies, OrderSet orders) {
         Companies = companies;
         Orders = orders;
     }
@@ -20,4 +20,9 @@ public class SalesPersistanceContext : IPersistanceContext {
         await Orders.SaveChanges();
     }
 
+    public void Dispose() {
+        Orders.Dispose();
+        Companies.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

@@ -14,8 +14,11 @@ public static class DependencyInjection {
         services.AddTransient<SalesUnitOfWork>();
         services.AddTransient<SalesPersistanceContext>();
 
+        services.AddTransient<OrderSet>();
+        services.AddTransient<CompanySet>();
+
         services.AddTransient<PersistanceSet<Order>, OrderSet>();
-        services.AddTransient<PersistanceSet<Company>, CompanySet >();
+        services.AddTransient<PersistanceSet<Company>, CompanySet>();
 
         services.AddSingleton<Func<SalesPersistanceContext, OrderRepository>>(s =>(spc) => new(spc));
         services.AddSingleton<Func<SalesPersistanceContext, CompanyRepository>>(s => (spc) => new(spc));

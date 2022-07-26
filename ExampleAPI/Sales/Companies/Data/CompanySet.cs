@@ -2,15 +2,18 @@
 using ExampleAPI.Sales.Companies.Domain;
 using Dapper;
 using System.Data;
+using MediatR;
 
 namespace ExampleAPI.Sales.Companies.Data;
 
 public class CompanySet : PersistanceSet<Company> {
 
     private readonly IDbConnection _connection;
+    private readonly IPublisher _publisher;
 
-    public CompanySet(NpgsqlOrderConnectionFactory factory) {
+    public CompanySet(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
         _connection = factory.CreateConnection();
+        _publisher = publisher;
     }
 
     public override async Task<Company?> Get(Guid id) {
@@ -45,12 +48,19 @@ public class CompanySet : PersistanceSet<Company> {
 
         }
 
+        foreach (var entity in RemovedEntities) {
+
+            const string command = "DELETE FROM companies WHERE id = @Id;";
+            await _connection.ExecuteAsync(command, new { entity.Id }, trx);
+
+        }
+        
         trx.Commit();
         _connection.Close();
 
-        //foreach (var entity in Entities) {
-        //    await entity.PublishEvents(_publisher);
-        //}
+        foreach (var entity in Entities) {
+            await entity.PublishEvents(_publisher);
+        }
 
     }
 
@@ -92,8 +102,9 @@ public class CompanySet : PersistanceSet<Company> {
 
     }
 
-    ~CompanySet() {
+    public override void Dispose() {
         _connection.Dispose();
+        GC.SuppressFinalize(this);
     }
 
 }

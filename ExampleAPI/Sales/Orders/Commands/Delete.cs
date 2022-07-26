@@ -19,6 +19,10 @@ public class Delete {
             _work = work;
         }
 
+        ~Handler() {
+            _work.Dispose();
+        }
+
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
             var order = await _work.Orders.Get(request.OrderId);
 
@@ -26,6 +30,7 @@ public class Delete {
                 return new NotFoundObjectResult($"Order with id '{request.OrderId}' not found.");
             }
 
+            _work.Orders.Remove(order);
             await _work.Complete();
 
             return new NoContentResult();

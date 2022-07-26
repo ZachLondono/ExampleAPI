@@ -17,6 +17,10 @@ public class RemoveItem {
             _work = work;
         }
 
+        ~Handler() {
+            _work.Dispose();
+        }
+
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
             //TODO: return a representation of the current order resource, rather than no content

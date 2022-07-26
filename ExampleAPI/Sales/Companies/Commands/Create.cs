@@ -19,6 +19,10 @@ public class Create {
             _work = work;
         }
 
+        ~Handler() {
+            _work.Dispose();
+        }
+
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
             var name = request.NewCompany.Name;

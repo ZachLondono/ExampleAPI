@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using ExampleAPI.Common.Data;
 using ExampleAPI.Sales.Orders.Domain;
+using MediatR;
 using System.Data;
 
 namespace ExampleAPI.Sales.Orders.Data;
@@ -8,9 +9,11 @@ namespace ExampleAPI.Sales.Orders.Data;
 public class OrderSet : PersistanceSet<Order> {
 
     private readonly IDbConnection _connection;
+    private readonly IPublisher _publisher;
 
-    public OrderSet(NpgsqlOrderConnectionFactory factory) {
+    public OrderSet(NpgsqlOrderConnectionFactory factory, IPublisher publisher) {
         _connection = factory.CreateConnection();
+        _publisher = publisher;
     }
 
     public override async Task<Order?> Get(Guid id) {
@@ -26,6 +29,8 @@ public class OrderSet : PersistanceSet<Order> {
         var items = await GetItemsFromOrderId(_connection, id);
 
         var order = new Order(orderData.Id, orderData.Version, orderData.Name, items);
+
+        Entities.Add(order);
 
         return order;
 
@@ -55,18 +60,25 @@ public class OrderSet : PersistanceSet<Order> {
 
         }
 
+        foreach (var entity in RemovedEntities) {
+
+            const string command = "DELETE FROM orders WHERE id = @OrderId;";
+            await _connection.ExecuteAsync(command, new { OrderId = entity.Id }, trx);
+
+        }
+
         trx.Commit();
         _connection.Close();
 
-        //foreach (var entity in Entities) {
-            //await entity.PublishEvents(_publisher);
-            //entity.ClearEvents();
-            //foreach (var item in entity.Items) {
-            //    int eventsPublished = await item.PublishEvents(_publisher);
-            //    entity.IncrementVersion(eventsPublished);
-            //    item.ClearEvents();
-            //}
-        //}
+        foreach (var entity in Entities) {
+            await entity.PublishEvents(_publisher);
+            entity.ClearEvents();
+            foreach (var item in entity.Items) {
+                int eventsPublished = await item.PublishEvents(_publisher);
+                entity.IncrementVersion(eventsPublished);
+                item.ClearEvents();
+            }
+        }
 
     }
 
@@ -138,10 +150,9 @@ public class OrderSet : PersistanceSet<Order> {
 
     }
 
-
-    ~OrderSet() {
+    public override void Dispose() {
         _connection.Dispose();
+        GC.SuppressFinalize(this);
     }
-
 
 }

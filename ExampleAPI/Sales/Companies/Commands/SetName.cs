@@ -18,6 +18,10 @@ public class SetName {
             _work = work;
         }
 
+        ~Handler() {
+            _work.Dispose();
+        }
+
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
 
             var company = await _work.Companies.Get(request.CompanyId);

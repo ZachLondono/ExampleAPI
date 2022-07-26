@@ -2,7 +2,7 @@
 
 namespace ExampleAPI.Common.Data;
 
-public abstract class PersistanceSet<TEntity> where TEntity : Entity {
+public abstract class PersistanceSet<TEntity> : IDisposable where TEntity : Entity {
 
 	//TODO: Need to track when entities are created/removed so they can be inserted/deleted
 	protected List<TEntity> Entities { get; init; } = new();
@@ -20,4 +20,5 @@ public abstract class PersistanceSet<TEntity> where TEntity : Entity {
 
 	public abstract Task SaveChanges();
 
+	public abstract void Dispose();
 }

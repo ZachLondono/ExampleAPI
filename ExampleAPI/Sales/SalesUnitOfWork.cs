@@ -4,7 +4,7 @@ using ExampleAPI.Sales.Orders.Data;
 
 namespace ExampleAPI.Sales.Data;
 
-public class SalesUnitOfWork : UnitOfWork {
+public class SalesUnitOfWork : UnitOfWork , IDisposable {
 
     private readonly SalesPersistanceContext _context;
     public CompanyRepository Companies { get; init; }
@@ -21,4 +21,8 @@ public class SalesUnitOfWork : UnitOfWork {
         Orders = createOrderRepo(_context);
     }
 
+    public void Dispose() {
+        _context.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

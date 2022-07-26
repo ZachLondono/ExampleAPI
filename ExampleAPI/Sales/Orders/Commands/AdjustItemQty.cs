@@ -19,6 +19,10 @@ public class AdjustItemQty {
             _work = work;
         }
 
+        ~Handler() {
+            _work.Dispose();
+        }
+
         public async Task<IActionResult> Handle(Command request, CancellationToken cancellationToken) {
             var order = await _work.Orders.Get(request.OrderId);
 
