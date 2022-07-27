@@ -29,7 +29,7 @@ public class CompanyRepositoryTests {
 
 
         // Act
-        var repo = new CompanyRepository(mock.Object, transaction, publisher);
+        var repo = new CompanyRepository(mock.Object, transaction);
 
 
         // Assert

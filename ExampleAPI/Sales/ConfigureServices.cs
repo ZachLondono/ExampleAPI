@@ -10,8 +10,8 @@ public static class ConfigureServices {
 
     public static IServiceCollection AddSales(this IServiceCollection services) {
 
-        services.AddSingleton<Func<IDbConnection, IDbTransaction, IPublisher, IOrderRepository>>(s => (c,t,p) => new OrderRepository(new DapperConnection(c), t,p));
-        services.AddSingleton<Func<IDbConnection, IDbTransaction, IPublisher, ICompanyRepository>>(s => (c, t, p) => new CompanyRepository(new DapperConnection(c), t, p));
+        services.AddSingleton<Func<IDbConnection, IDbTransaction, IOrderRepository>>(s => (c,t) => new OrderRepository(new DapperConnection(c), t));
+        services.AddSingleton<Func<IDbConnection, IDbTransaction, ICompanyRepository>>(s => (c, t) => new CompanyRepository(new DapperConnection(c), t));
 
         services.AddTransient<ISalesUnitOfWork, SalesUnitOfWork>();
 

@@ -10,8 +10,8 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
     private readonly IDbConnection _connection;
     private IDbTransaction _transaction;
     private IPublisher _publisher;
-    private readonly Func<IDbConnection, IDbTransaction, IPublisher, IOrderRepository> _ordersFactory;
-    private readonly Func<IDbConnection, IDbTransaction, IPublisher, ICompanyRepository> _companiesFactory;
+    private readonly Func<IDbConnection, IDbTransaction, IOrderRepository> _ordersFactory;
+    private readonly Func<IDbConnection, IDbTransaction, ICompanyRepository> _companiesFactory;
 
     public IOrderRepository Orders { get; private set; }
     public ICompanyRepository Companies { get; private set; }
@@ -19,8 +19,8 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
     // TODO: use abstract factory pattern to make the constructor a little cleaner
     public SalesUnitOfWork(NpgsqlSalesConnectionFactory factory,
                             IPublisher publisher,
-                            Func<IDbConnection, IDbTransaction, IPublisher, IOrderRepository> ordersFactory,
-                            Func<IDbConnection, IDbTransaction, IPublisher, ICompanyRepository> companiesFactory) {
+                            Func<IDbConnection, IDbTransaction, IOrderRepository> ordersFactory,
+                            Func<IDbConnection, IDbTransaction, ICompanyRepository> companiesFactory) {
 
         _connection = factory.CreateConnection();
         _connection.Open();
@@ -29,15 +29,29 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
         _ordersFactory = ordersFactory;
         _companiesFactory = companiesFactory;
 
-        Orders = _ordersFactory(_connection, _transaction, _publisher);
-        Companies = _companiesFactory(_connection, _transaction, _publisher);
+        Orders = _ordersFactory(_connection, _transaction);
+        Companies = _companiesFactory(_connection, _transaction);
     }
 
-    public Task CommitAsync() {
+    public async Task CommitAsync() {
 
         try {
             
             _transaction.Commit();
+            foreach (var entity in Companies.ActiveEntities) {
+                await entity.PublishEvents(_publisher);
+                entity.ClearEvents();
+            }
+
+            foreach (var entity in Orders.ActiveEntities) {
+                await entity.PublishEvents(_publisher);
+                entity.ClearEvents();
+                foreach (var item in entity.Items) {
+                    int eventsPublished = await item.PublishEvents(_publisher);
+                    entity.IncrementVersion(eventsPublished);
+                    item.ClearEvents();
+                }
+            }
 
         } catch {
             
@@ -50,18 +64,18 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
             _transaction = _connection.BeginTransaction();
 
             // Reset the repositories, removing any state that they might have had
-            Orders = _ordersFactory(_connection, _transaction, _publisher);
-            Companies = _companiesFactory(_connection, _transaction, _publisher);
+            Orders = _ordersFactory(_connection, _transaction);
+            Companies = _companiesFactory(_connection, _transaction);
 
         }
 
-        return Task.CompletedTask;
     }
 
 
     public void Dispose() {
         _transaction.Dispose();
         _connection.Dispose();
+        GC.SuppressFinalize(this);
     }
 
 }

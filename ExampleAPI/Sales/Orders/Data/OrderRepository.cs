@@ -10,16 +10,16 @@ public class OrderRepository :  IOrderRepository {
 
     private readonly IDapperConnection _connection;
     private readonly IDbTransaction _transaction;
-    private readonly IPublisher _publisher;
 
-    public OrderRepository(IDapperConnection connection, IDbTransaction transaction, IPublisher publisher) {
+    private readonly List<Order> _activeEntities = new();
+    public IReadOnlyCollection<Order> ActiveEntities => _activeEntities.AsReadOnly();
+
+    public OrderRepository(IDapperConnection connection, IDbTransaction transaction) {
         _connection = connection;
         _transaction = transaction;
-        _publisher = publisher;
     }
 
     public async Task AddAsync(Order entity) {
-
         const string command = "INSERT INTO orders (id, name) values (@Id, @Name);";
 
         await _connection.ExecuteAsync(command, new { entity.Id, entity.Name }, _transaction);
@@ -27,8 +27,7 @@ public class OrderRepository :  IOrderRepository {
             await InsertItem(entity, item.Id, item.Name, item.Qty, _connection, _transaction);
         }
 
-        await entity.PublishEvents(_publisher);
-
+        _activeEntities.Add(entity);
     }
 
     public async Task<Order?> GetAsync(Guid id) {
@@ -44,6 +43,10 @@ public class OrderRepository :  IOrderRepository {
 
         var order =  new Order(orderData.Id, orderData.Version, orderData.Name, items);
 
+        var existing = _activeEntities.FirstOrDefault(o => o.Id == order.Id);
+        if (existing is not null) _activeEntities.Remove(existing);
+        _activeEntities.Add(order);
+
         return order;
     }
 
@@ -57,7 +60,13 @@ public class OrderRepository :  IOrderRepository {
 
             var items = await GetItemsFromOrderId(_connection, orderData.Id, _transaction);
 
-            orders.Add(new(orderData.Id, orderData.Version, orderData.Name, items));
+            var order = new Order(orderData.Id, orderData.Version, orderData.Name, items);
+
+            orders.Add(order);
+
+            var existing = _activeEntities.FirstOrDefault(o => o.Id == order.Id);
+            if (existing is not null) _activeEntities.Remove(existing);
+            _activeEntities.Add(order);
 
         }
 
@@ -81,6 +90,7 @@ public class OrderRepository :  IOrderRepository {
         // PostgreSQL ueses cascading delete to remove ordered items
         const string command = "DELETE FROM orders WHERE id = @OrderId;";
         await _connection.ExecuteAsync(command, new { OrderId = entity.Id }, _transaction);
+        _activeEntities.Remove(entity);
     }
 
     public async Task UpdateAsync(Order entity) {
@@ -113,14 +123,6 @@ public class OrderRepository :  IOrderRepository {
 
         foreach (var item in entity.Items) {
             await SaveItem(item, _connection, _transaction);
-        }
-
-        await entity.PublishEvents(_publisher);
-        entity.ClearEvents();
-        foreach (var item in entity.Items) {
-            int eventsPublished = await item.PublishEvents(_publisher);
-            entity.IncrementVersion(eventsPublished);
-            item.ClearEvents();
         }
 
     }

@@ -6,5 +6,6 @@ namespace ExampleAPI.Sales.Orders.Data;
 public interface IOrderRepository : IRepository<Order> {
 
     // Put custom order queries / commands here
+    public IReadOnlyCollection<Order> ActiveEntities { get; }
 
 }

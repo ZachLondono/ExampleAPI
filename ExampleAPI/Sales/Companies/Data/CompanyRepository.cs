@@ -1,6 +1,5 @@
 ﻿using ExampleAPI.Sales.Companies.Domain;
 using MediatR;
-using Dapper;
 using System.Data;
 using ExampleAPI.Common.Data;
 
@@ -10,12 +9,13 @@ public class CompanyRepository : ICompanyRepository {
 
     private readonly IDapperConnection _connection;
     private readonly IDbTransaction _transaction;
-    private readonly IPublisher _publisher;
 
-    public CompanyRepository(IDapperConnection connection, IDbTransaction transaction, IPublisher publisher) {
+    private readonly List<Company> _activeEntities = new();
+    public IReadOnlyCollection<Company> ActiveEntities => _activeEntities.AsReadOnly();
+
+    public CompanyRepository(IDapperConnection connection, IDbTransaction transaction) {
         _connection = connection;
         _transaction = transaction;
-        _publisher = publisher;
     }
 
     public async Task AddAsync(Company entity) {
@@ -24,7 +24,7 @@ public class CompanyRepository : ICompanyRepository {
 
         await _connection.ExecuteAsync(query, new { entity.Id, entity.Name }, _transaction);
 
-        await entity.PublishEvents(_publisher);
+        _activeEntities.Add(entity);
 
     }
 
@@ -46,6 +46,10 @@ public class CompanyRepository : ICompanyRepository {
 
         var company = new Company(companyData.Id, companyData.Version, companyData.Name, address);
 
+        var existing = _activeEntities.FirstOrDefault(o => o.Id == company.Id);
+        if (existing is not null) _activeEntities.Remove(existing);
+        _activeEntities.Add(company);
+
         return company;
 
     }
@@ -56,6 +60,12 @@ public class CompanyRepository : ICompanyRepository {
 
         var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, c.Version, c.Name, a), splitOn: "line1", transaction: _transaction);
 
+        foreach (var company in companies) {
+            var existing = _activeEntities.FirstOrDefault(o => o.Id == company.Id);
+            if (existing is not null) _activeEntities.Remove(existing);
+            _activeEntities.Add(company);
+        }
+
         return companies;
 
     }
@@ -65,6 +75,8 @@ public class CompanyRepository : ICompanyRepository {
         const string command = "DELETE FROM companies WHERE id = @Id;";
 
         await _connection.ExecuteAsync(command, new { entity.Id }, _transaction);
+
+        _activeEntities.Remove(entity);
 
     }
 
@@ -97,8 +109,6 @@ public class CompanyRepository : ICompanyRepository {
             }
 
         }
-
-        await entity.PublishEvents(_publisher);
 
     }
 
