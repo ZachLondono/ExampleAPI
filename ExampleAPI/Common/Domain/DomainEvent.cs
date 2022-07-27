@@ -18,6 +18,9 @@ public abstract record DomainEvent : INotification {
     public Guid EventId { get; init; }
 
     [JsonIgnore]
+    public Guid? CorrelatedId { get; init; }
+
+    [JsonIgnore]
     public bool IsPublished { get; private set; } = false;
 
     public async Task<bool> Publish(IPublisher publisher) {
@@ -28,9 +31,12 @@ public abstract record DomainEvent : INotification {
     }
 
     /// <param name="aggregateId">The id of the aggregate to which this event occcured</param>
-    public DomainEvent(Guid aggregateId) {
+    public DomainEvent(Guid aggregateId, Guid? correlatedId = null) {
         AggregateId = aggregateId;
+        CorrelatedId = correlatedId;
         EventId = Guid.NewGuid();
     }
+
+    public DomainEvent(Guid aggregateId) : this(aggregateId, null) { }
 
 }
