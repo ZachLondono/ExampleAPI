@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using ExampleAPI.Common.Data;
+using Npgsql;
 using System.Data;
 
 namespace ExampleAPI.Sales;
