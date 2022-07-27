@@ -11,7 +11,6 @@ public class CompanyRepository : ICompanyRepository {
     private readonly IDbTransaction _transaction;
 
     private readonly List<Company> _activeEntities = new();
-    public IReadOnlyCollection<Company> ActiveEntities => _activeEntities.AsReadOnly();
 
     public CompanyRepository(IDapperConnection connection, IDbTransaction transaction) {
         _connection = connection;
@@ -23,8 +22,6 @@ public class CompanyRepository : ICompanyRepository {
         const string query = "INSERT INTO companies (id, name) VALUES (@Id, @Name);";
 
         await _connection.ExecuteAsync(query, new { entity.Id, entity.Name }, _transaction);
-
-        _activeEntities.Add(entity);
 
     }
 
@@ -46,10 +43,6 @@ public class CompanyRepository : ICompanyRepository {
 
         var company = new Company(companyData.Id, companyData.Version, companyData.Name, address);
 
-        var existing = _activeEntities.FirstOrDefault(o => o.Id == company.Id);
-        if (existing is not null) _activeEntities.Remove(existing);
-        _activeEntities.Add(company);
-
         return company;
 
     }
@@ -60,12 +53,6 @@ public class CompanyRepository : ICompanyRepository {
 
         var companies = await _connection.QueryAsync<CompanyData, Address, Company>(sql: query, map: (c, a) => new Company(c.Id, c.Version, c.Name, a), splitOn: "line1", transaction: _transaction);
 
-        foreach (var company in companies) {
-            var existing = _activeEntities.FirstOrDefault(o => o.Id == company.Id);
-            if (existing is not null) _activeEntities.Remove(existing);
-            _activeEntities.Add(company);
-        }
-
         return companies;
 
     }
@@ -75,8 +62,6 @@ public class CompanyRepository : ICompanyRepository {
         const string command = "DELETE FROM companies WHERE id = @Id;";
 
         await _connection.ExecuteAsync(command, new { entity.Id }, _transaction);
-
-        _activeEntities.Remove(entity);
 
     }
 
@@ -110,6 +95,17 @@ public class CompanyRepository : ICompanyRepository {
 
         }
 
+        var existing = _activeEntities.FirstOrDefault(o => o.Id == entity.Id);
+        if (existing is not null) _activeEntities.Remove(existing);
+        _activeEntities.Add(entity);
+
+    }
+
+    public async Task PublishEvents(IPublisher publisher) {
+        foreach (var entity in _activeEntities) {
+            await entity.PublishEvents(publisher);
+        }
+        _activeEntities.Clear();
     }
 
 }

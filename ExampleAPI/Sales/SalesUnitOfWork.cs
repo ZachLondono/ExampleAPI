@@ -38,19 +38,17 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
         try {
             
             _transaction.Commit();
-            foreach (var entity in Companies.ActiveEntities) {
-                await entity.PublishEvents(_publisher);
-                entity.ClearEvents();
+
+            try { 
+                await Companies.PublishEvents(_publisher);
+            } catch {
+                // TODO: log exception
             }
 
-            foreach (var entity in Orders.ActiveEntities) {
-                await entity.PublishEvents(_publisher);
-                entity.ClearEvents();
-                foreach (var item in entity.Items) {
-                    int eventsPublished = await item.PublishEvents(_publisher);
-                    entity.IncrementVersion(eventsPublished);
-                    item.ClearEvents();
-                }
+            try {
+                await Orders.PublishEvents(_publisher);
+            } catch {
+                // TODO: log exception
             }
 
         } catch {
@@ -62,7 +60,7 @@ public class SalesUnitOfWork : ISalesUnitOfWork, IDisposable {
             
             _transaction.Dispose();
             _transaction = _connection.BeginTransaction();
-
+            
             // Reset the repositories, removing any state that they might have had
             Orders = _ordersFactory(_connection, _transaction);
             Companies = _companiesFactory(_connection, _transaction);
