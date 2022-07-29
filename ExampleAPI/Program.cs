@@ -1,8 +1,6 @@
-using ExampleAPI.Common;
-using ExampleAPI.Companies.Data;
-using ExampleAPI.Companies.Domain;
-using ExampleAPI.Orders.Data;
-using ExampleAPI.Orders.Domain;
+using ExampleAPI.Common.Data;
+using ExampleAPI.Common.Domain;
+using ExampleAPI.Sales;
 using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
@@ -15,10 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMediatR(typeof(Program).Assembly);
-builder.Services.AddTransient<IRepository<Order>, OrderRepository>();
-builder.Services.AddTransient<IRepository<Company>, CompanyRepository>();
-builder.Services.AddTransient<NpgsqlOrderConnectionFactory>();
 builder.Services.AddTransient<INotificationHandler<DomainEvent>, DomainEventHandler<DomainEvent>>();
+builder.Services.AddSales();
 
 Log.Logger = new LoggerConfiguration()
                 .ReadFrom
