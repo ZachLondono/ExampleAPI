@@ -1,9 +1,6 @@
 # Example API - Feature Folder, DDD, .Net Core 6 WebAPI sample 
 This is a simple sample project consisting of an Asp.Net Core WebAPI.
 
-## Motivation
-This repository is made as a an example of how I would create a WebAPI and is made as a reference for future projects.
-
 ## Technologies
 C# 10 - .Net 6 - Asp.Net - Dapper - MediatR - XUnit - PostgreSQL
 
